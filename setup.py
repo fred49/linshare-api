@@ -77,5 +77,6 @@ setup(
     # project is installed.
     install_requires=['poster',
                         'progressbar',
+                        'OrderedDict',
                         ],
 )
