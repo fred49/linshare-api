@@ -98,9 +98,10 @@ class Documents(GenericClass):
         return self.core.upload(file_path, url, http_method='PUT')
 
     @Time('download')
-    def download(self, uuid, directory=None):
+    def download(self, uuid, directory=None, progress_bar=True):
         url = "documents/{u}/download".format(u=uuid)
-        return self.core.download(uuid, url, directory=directory)
+        return self.core.download(uuid, url, directory=directory,
+                                  progress_bar=progress_bar)
 
     @Time('delete')
     @Invalid(whole_familly=True)
