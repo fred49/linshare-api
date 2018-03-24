@@ -38,6 +38,7 @@ from linshareapi.admin.iusers import InconsistentUsers
 from linshareapi.admin.ldapconnections import LdapConnections
 from linshareapi.admin.ldapconnections import LdapConnections2
 from linshareapi.admin.domainpolicies import DomainPolicies
+from linshareapi.admin.upgradetasks import UpgradeTasks
 
 
 # -----------------------------------------------------------------------------
@@ -96,3 +97,4 @@ class AdminCli(CoreCli):
             self.domain_patterns = DomainPatterns2(self)
             self.funcs = Functionalities(self)
             self.domain_policies = DomainPolicies(self)
+            self.upgrade_tasks = UpgradeTasks(self)
