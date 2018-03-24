@@ -133,6 +133,6 @@ class LdapConnections2(LdapConnections):
         rbu.add_field('uuid')
         rbu.add_field('label', required=True)
         rbu.add_field('providerUrl', required=True)
-        rbu.add_field('securityPrincipal', "principal")
-        rbu.add_field('securityCredentials', "credential")
+        rbu.add_field('securityPrincipal', "principal", extended=True)
+        rbu.add_field('securityCredentials', "credential", extended=True)
         return rbu
