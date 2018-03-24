@@ -85,22 +85,24 @@ class ThreadEntries(GenericClass):
         return self.core.upload(file_path, url, description)
 
     @Time('download')
-    def download(self, thread_uuid, uuid, directory=None):
+    def download(self, thread_uuid, uuid, directory=None, progress_bar=True):
         if thread_uuid is None:
             raise ValueError("missing thread_uuid")
         if uuid is None:
             raise ValueError("missing uuid")
         url = "threads/%s/entries/%s/download" % (thread_uuid, uuid)
-        return self.core.download(uuid, url, directory=directory)
+        return self.core.download(uuid, url, directory=directory,
+                                  progress_bar=progress_bar)
 
     @Time('thumbnail')
-    def thumbnail(self, thread_uuid, uuid, directory=None):
+    def thumbnail(self, thread_uuid, uuid, directory=None, progress_bar=True):
         if thread_uuid is None:
             raise ValueError("missing thread_uuid")
         if uuid is None:
             raise ValueError("missing uuid")
         url = "threads/%s/entries/%s/thumbnail" % (thread_uuid, uuid)
-        return self.core.download(uuid, url, directory=directory)
+        return self.core.download(uuid, url, directory=directory,
+                                  progress_bar=progress_bar)
 
     @Time('delete')
     @Invalid(whole_familly=True)
