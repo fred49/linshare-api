@@ -170,9 +170,9 @@ class Domains2(Domains):
         rbu.add_field('policy', value={"identifier": "DefaultDomainPolicy"},
                       hidden=True)
         rbu.add_field('type', "domain_type", value="TOPDOMAIN")
-        rbu.add_field('parent', "parent_id")
-        rbu.add_field('language', value="ENGLISH")
-        rbu.add_field('externalMailLocale', value="ENGLISH")
+        rbu.add_field('parent', "parent_id", extended=True)
+        rbu.add_field('language', value="ENGLISH", extended=True)
+        rbu.add_field('externalMailLocale', value="ENGLISH", extended=True)
         rbu.add_field('userRole', "role", value="SIMPLE")
         rbu.add_field('mailConfigUuid',
                       value="946b190d-4c95-485f-bfe6-d288a2de1edd",
@@ -180,7 +180,7 @@ class Domains2(Domains):
         rbu.add_field('mimePolicyUuid',
                       value="3d6d8800-e0f7-11e3-8ec0-080027c0eef0",
                       extended=True)
-        rbu.add_field('description', value="")
+        rbu.add_field('description', value="", extended=True)
         rbu.add_field('authShowOrder', value="1", extended=True)
         rbu.add_field('providers', value=[], extended=True)
         rbu.add_field('currentWelcomeMessage',
