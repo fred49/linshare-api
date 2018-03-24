@@ -65,9 +65,10 @@ class ReceivedShares(GenericClass):
         return self.core.list("shares")
 
     @Time('download')
-    def download(self, uuid, directory=None):
+    def download(self, uuid, directory=None, progress_bar=True):
         url = "shares/%s/download" % uuid
-        return self.core.download(uuid, url, directory=directory)
+        return self.core.download(uuid, url, directory=directory,
+                                  progress_bar=progress_bar)
 
     @Time('delete')
     @Invalid()
@@ -110,9 +111,10 @@ class ReceivedShares2(ReceivedShares):
         return self.core.list("received_shares")
 
     @Time('download')
-    def download(self, uuid, directory=None):
+    def download(self, uuid, directory=None, progress_bar=True):
         url = "received_shares/%s/download" % uuid
-        return self.core.download(uuid, url, directory=directory)
+        return self.core.download(uuid, url, directory=directory,
+                                  progress_bar=progress_bar)
 
     @Time('delete')
     @Invalid()
