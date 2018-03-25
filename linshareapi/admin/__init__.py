@@ -39,6 +39,7 @@ from linshareapi.admin.ldapconnections import LdapConnections
 from linshareapi.admin.ldapconnections import LdapConnections2
 from linshareapi.admin.domainpolicies import DomainPolicies
 from linshareapi.admin.upgradetasks import UpgradeTasks
+from linshareapi.admin.welcomemessages import WelcomeMessages
 
 
 # -----------------------------------------------------------------------------
@@ -98,3 +99,4 @@ class AdminCli(CoreCli):
             self.funcs = Functionalities(self)
             self.domain_policies = DomainPolicies(self)
             self.upgrade_tasks = UpgradeTasks(self)
+            self.welcome_messages = WelcomeMessages(self)
