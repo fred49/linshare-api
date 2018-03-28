@@ -27,6 +27,7 @@
 
 from __future__ import unicode_literals
 
+import urllib
 from linshareapi.core import ResourceBuilder
 from linshareapi.cache import Cache as CCache
 from linshareapi.cache import Invalid as IInvalid
@@ -57,9 +58,80 @@ class Invalid(IInvalid):
 
 
 # -----------------------------------------------------------------------------
+class ConsoleUpgradeTasks(GenericClass):
+
+    local_base_url = "upgrade_tasks"
+
+    def get_rbu(self):
+        rbu = ResourceBuilder("console")
+        rbu.add_field('creationDate')
+        rbu.add_field('criticity')
+        rbu.add_field('message')
+        rbu.add_field('asyncTask', extended=True)
+        rbu.add_field('upgradeTask', extended=True)
+        # rbu.add_field('waitingDuration', hidden=True)
+        return rbu
+
+    @Time('console.list')
+    def list(self, identifier, uuid):
+        url = "{base}/{identifier}/async_tasks/{uuid}/console".format(
+            base=self.local_base_url,
+            identifier=identifier,
+            uuid=uuid
+        )
+        return self.core.get(url)
+
+
+class AsyncUpgradeTasks(GenericClass):
+
+    local_base_url = "upgrade_tasks"
+
+    def __init__(self, corecli):
+        super(AsyncUpgradeTasks, self).__init__(corecli)
+        self.console = ConsoleUpgradeTasks(corecli)
+
+    def get_rbu(self):
+        rbu = ResourceBuilder("async_tasks")
+        rbu.add_field('uuid')
+        rbu.add_field('fileName')
+        rbu.add_field('status')
+        rbu.add_field('creationDate')
+        rbu.add_field('processingDuration', extended=True)
+        rbu.add_field('resourceUuid', extended=True)
+        rbu.add_field('modificationDate', extended=True)
+        rbu.add_field('errorName', extended=True)
+        rbu.add_field('errorCode', extended=True)
+        rbu.add_field('errorMsg', extended=True)
+        rbu.add_field('frequency', hidden=True)
+        rbu.add_field('transfertDuration', hidden=True)
+        rbu.add_field('waitingDuration', hidden=True)
+        return rbu
+
+    @Time('async.list')
+    def list(self, identifier):
+        url = "{base}/{identifier}/async_tasks".format(
+            base=self.local_base_url,
+            identifier=identifier
+        )
+        return self.core.get(url)
+
+    @Time('async.get')
+    def get(self, identifier, uuid):
+        url = "{base}/{identifier}/async_tasks/{uuid}".format(
+            base=self.local_base_url,
+            identifier=identifier,
+            uuid=uuid
+        )
+        return self.core.get(url)
+
+
 class UpgradeTasks(GenericClass):
 
     local_base_url = "upgrade_tasks"
+
+    def __init__(self, corecli):
+        super(UpgradeTasks, self).__init__(corecli)
+        self.async_tasks = AsyncUpgradeTasks(corecli)
 
     def get_rbu(self):
         rbu = ResourceBuilder("upgrade_tasks")
@@ -85,30 +157,35 @@ class UpgradeTasks(GenericClass):
         return self.core.list(self.local_base_url)
 
     @Time('get')
-    def get(self, uuid):
-        url = "{base}/{uuid}".format({
-            'base': self.local_base_url,
-            'uuid': uuid
-        })
+    def list_async(self, identifier):
+        url = "{base}/{identifier}/async_tasks".format(
+            base=self.local_base_url,
+            identifier=identifier
+        )
         return self.core.get(url)
 
-    # @Time('delete')
-    # @Invalid()
-    # def delete(self, uuid):
-    #     """ Delete one list."""
-    #     url = "{base}/{uuid}".format({
-    #         'base': self.local_base_url,
-    #         'uuid': uuid
-    #     })
-    #     return self.core.delete(url)
+    @Time('get')
+    def get(self, identifier):
+        url = "{base}/{identifier}".format(
+            base=self.local_base_url,
+            identifier=identifier
+        )
+        return self.core.get(url)
 
-    # @Time('update')
-    # @Invalid()
-    # def update(self, data):
-    #     """ Update a list."""
-    #     self.debug(data)
-    #     url = "{base}/{uuid}".format({
-    #         'base': self.local_base_url,
-    #         'uuid': data.get('uuid')
-    #     })
-    #     return self.core.update(url, data)
+    @Time('trigger')
+    @Invalid()
+    def trigger(self, identifier, force=True):
+        """Trigger an upgrade task."""
+        self.debug(identifier)
+        url = "{base}/{identifier}".format(
+            base=self.local_base_url,
+            identifier=identifier
+        )
+        param = {}
+        if force:
+            param['force'] = force
+        encode = urllib.urlencode(param)
+        if encode:
+            url += "?"
+            url += encode
+        return self.core.update(url, {})
