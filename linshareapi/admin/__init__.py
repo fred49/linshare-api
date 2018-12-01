@@ -40,6 +40,7 @@ from linshareapi.admin.ldapconnections import LdapConnections2
 from linshareapi.admin.domainpolicies import DomainPolicies
 from linshareapi.admin.upgradetasks import UpgradeTasks
 from linshareapi.admin.welcomemessages import WelcomeMessages
+from linshareapi.admin.public_keys import PublicKeys
 
 
 # -----------------------------------------------------------------------------
@@ -100,3 +101,4 @@ class AdminCli(CoreCli):
             self.domain_policies = DomainPolicies(self)
             self.upgrade_tasks = UpgradeTasks(self)
             self.welcome_messages = WelcomeMessages(self)
+            self.public_keys = PublicKeys(self)
