@@ -237,10 +237,13 @@ class CoreCli(object):
                 self.log.debug("the result is : ")
                 self.log.debug(json.dumps(json_obj, sort_keys=True, indent=2))
         else:
+            self.log.error("Payload size : " + str(len(result)))
             self.log.debug(str(result))
             msg = "Wrong content type in the http response : "
             if content_type:
                 msg += content_type
+            self.log.error("Server error code : " + str(resultq.code))
+            self.log.error("Server error message : " + str(result))
             self.log.error(msg)
             raise ValueError(msg)
         return json_obj
