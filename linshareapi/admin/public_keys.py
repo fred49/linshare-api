@@ -32,57 +32,21 @@ import urllib
 
 from linshareapi.core import ResourceBuilder
 from linshareapi.admin.core import GenericClass
-# TO BE REMOVED
-# pylint: disable=unused-import
 from linshareapi.admin.core import Time
 from linshareapi.admin.core import Cache
-from linshareapi.admin.core import Invalid
+
 
 # pylint: disable=missing-docstring
 # pylint: disable=too-few-public-methods
 
-class TemplateResource(GenericClass):
+class PublicKeys(GenericClass):
 
     # Mandatory: define the base api for the REST resource
-    local_base_url = "my_resource"
-
-    # Mandatory: define the REST resource
-    def get_rbu(self):
-        rbu = ResourceBuilder("template_resource")
-        rbu.add_field('name')
-        rbu.add_field('size')
-        rbu.add_field('uuid')
-        rbu.add_field('creationDate')
-        rbu.add_field('modificationDate')
-        rbu.add_field('description', extended=True)
-        rbu.add_field('sha256sum', extended=True)
-        rbu.add_field('metaData', extended=True)
-        rbu.add_field(
-            'myDomain',
-            value={
-                'identifier':'LinShareRootDomain',
-            },
-            arg="domain",
-            extended=False,
-            required=True)
-        return rbu
-
-    # inherited methods:
-    #  * def get(self, uuid):
-    #  * def delete(self, uuid):
-    #  * def list(self):
-    #  * def create(self, data):
-    #  * def update(self, data):
-    #  * def invalid(self):
-
-    # Available annotations:
-    #  * @Time('delete') : a wrapper to time a method.
-    #  * @Cache() : allow caching the method's result
-    #  * @Invalid() : invalid the cache
+    local_base_url = "public_keys"
 
     @Time('list')
     @Cache()
-    def sample_list(self, domain=None):
+    def list(self, domain=None):
         url = "{base}".format(
             base=self.local_base_url
         )
@@ -94,3 +58,14 @@ class TemplateResource(GenericClass):
             url += "?"
             url += encode
         return self.core.list(url)
+
+    # Mandatory: define the REST resource
+    def get_rbu(self):
+        rbu = ResourceBuilder("public_key")
+        rbu.add_field('issuer', required=True)
+        rbu.add_field('format', required=True)
+        rbu.add_field('creationDate')
+        rbu.add_field('uuid')
+        rbu.add_field('domainUuid', arg="domain", extended=True)
+        rbu.add_field('publicKey', arg="key", extended=True, required=True)
+        return rbu
