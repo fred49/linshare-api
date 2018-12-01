@@ -83,10 +83,10 @@ class Threads(GenericClass):
     def get_rbu(self):
         rbu = ResourceBuilder("threads")
         rbu.add_field('name', required=True)
-        rbu.add_field('domain')
         rbu.add_field('uuid')
         rbu.add_field('creationDate')
         rbu.add_field('modificationDate')
+        rbu.add_field('domain', extended=True)
         return rbu
 
 
