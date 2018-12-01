@@ -701,3 +701,26 @@ class ResourceBuilder(object):
                     int(value)
                 if e_type == float:
                     float(value)
+
+
+class GenericClass(object):
+    def __init__(self, corecli):
+        self.core = corecli
+        self.log = logging.getLogger('linshareapi.core.api')
+
+    def get_rbu(self):
+        # pylint: disable=R0201
+        rbu = ResourceBuilder("generic")
+        return rbu
+
+    def get_resource(self):
+        return self.get_rbu().to_resource()
+
+    def debug(self, data):
+        self.log.debug("input data :")
+        self.log.debug(json.dumps(data, sort_keys=True, indent=2))
+
+    def _check(self, data):
+        rbu = self.get_rbu()
+        rbu.copy(data)
+        rbu.check_required_fields()

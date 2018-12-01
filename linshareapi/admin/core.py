@@ -28,13 +28,12 @@
 
 from __future__ import unicode_literals
 
-import logging
-import logging.handlers
-import json
 
-from linshareapi.core import ResourceBuilder
+from linshareapi.core import GenericClass as GGenericClass
 from linshareapi.cache import CacheManager
 from linshareapi.cache import Time as CTime
+from linshareapi.cache import Cache as CCache
+from linshareapi.cache import Invalid as IInvalid
 
 
 # pylint: disable=missing-docstring
@@ -47,24 +46,76 @@ class Time(CTime):
         super(Time, self).__init__('linshareapi.admin.' + suffix, **kwargs)
 
 
-class GenericClass(object):
-    def __init__(self, corecli):
-        self.core = corecli
-        self.log = logging.getLogger('linshareapi.admin.rbu')
+class Cache(CCache):
+    def __init__(self, **kwargs):
+        super(Cache, self).__init__(CM, 'resource_key_identifier', **kwargs)
 
-    def get_rbu(self):
-        # pylint: disable=R0201
-        rbu = ResourceBuilder("generic")
-        return rbu
 
-    def get_resource(self):
-        return self.get_rbu().to_resource()
+class Invalid(IInvalid):
+    def __init__(self, **kwargs):
+        super(Invalid, self).__init__(CM, 'resource_key_identifier', **kwargs)
 
-    def debug(self, data):
-        self.log.debug("input data :")
-        self.log.debug(json.dumps(data, sort_keys=True, indent=2))
 
-    def _check(self, data):
-        rbu = self.get_rbu()
-        rbu.copy(data)
-        rbu.check_required_fields()
+class GenericClass(GGenericClass):
+
+    local_base_url = "template_api"
+
+    @Time('get')
+    @Cache()
+    def get(self, uuid):
+        """TODO"""
+        url = "{base}/{uuid}".format(
+            base=self.local_base_url,
+            uuid=uuid
+        )
+        return self.core.get(url)
+
+
+    @Time('list')
+    @Cache()
+    def list(self):
+        """TODO"""
+        url = "{base}".format(
+            base=self.local_base_url
+        )
+        return self.core.list(url)
+
+
+    @Time('delete')
+    @Invalid()
+    def delete(self, uuid):
+        """TODO"""
+        url = "{base}/{uuid}".format(
+            base=self.local_base_url,
+            uuid=uuid
+        )
+        return self.core.delete(url)
+
+
+    @Time('create')
+    @Invalid()
+    def create(self, data):
+        """TODO"""
+        self.debug(data)
+        self._check(data)
+        return self.core.create(self.local_base_url, data)
+
+
+    @Time('update')
+    @Invalid()
+    def update(self, data):
+        """TODO"""
+        self.debug(data)
+        url = "{base}/{uuid}".format(
+            base=self.local_base_url,
+            uuid=data.get('uuid')
+        )
+        return self.core.update(url, data)
+
+
+    # pylint: disable=no-self-use
+    @Time('invalid')
+    @Invalid()
+    def invalid(self):
+        """Call this method to invalid the cache."""
+        return "invalid : ok"
