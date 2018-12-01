@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
+"""TODO"""
 
 
 # This file is part of Linshare api.
@@ -36,20 +37,17 @@ from linshareapi.cache import CacheManager
 from linshareapi.cache import Time as CTime
 
 
-# pylint: disable=C0111
-# Missing docstring
-# pylint: disable=R0903
-# Too few public methods
-# -----------------------------------------------------------------------------
+# pylint: disable=missing-docstring
+# pylint: disable=too-few-public-methods
+
+
 CM = CacheManager()
 
-# -----------------------------------------------------------------------------
 class Time(CTime):
     def __init__(self, suffix, **kwargs):
         super(Time, self).__init__('linshareapi.user.' + suffix, **kwargs)
 
 
-# -----------------------------------------------------------------------------
 class GenericClass(object):
 
     def __init__(self, corecli):

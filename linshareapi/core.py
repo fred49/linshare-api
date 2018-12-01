@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
+"""TODO"""
 
 
 # This file is part of Linshare api.
@@ -33,18 +34,19 @@ import sys
 import logging
 import logging.handlers
 import base64
+import datetime
 import urllib2
 import cookielib
 import json
 import poster
-import datetime
 from ordereddict import OrderedDict
 from progressbar import ProgressBar, FileTransferSpeed, Bar, ETA, Percentage
 
 
-# pylint: disable=C0111
-# Missing docstring
-# -----------------------------------------------------------------------------
+# pylint: disable=missing-docstring
+# pylint: disable=too-few-public-methods
+
+
 class LinShareException(Exception):
     pass
 
@@ -54,7 +56,6 @@ class LinShareException(Exception):
 #        self.msg = msg
 
 
-# -----------------------------------------------------------------------------
 def extract_file_name(content_dispo):
     """Extract file name from the input request body"""
     # print type(content_dispo)
@@ -106,7 +107,6 @@ class FileWithCallback(file):
         data = file.write(self, data)
 
 
-# -----------------------------------------------------------------------------
 class ApiNotImplementedYet(object):
 
     def __init__(self, corecli, version, end_point):
@@ -116,13 +116,11 @@ class ApiNotImplementedYet(object):
 
     def __getattr__(self, name):
         raise NotImplementedError(
-            "The current end point '%(api)s' is not supported in the api \
-version '%(version)s'." % {
+            "The current end point '%(api)s' is not supported in the api version '%(version)s'." % {
                 'api': self.end_point,
                 'version': self.version})
 
 
-# -----------------------------------------------------------------------------
 class CoreCli(object):
 
     # pylint: disable=R0902
@@ -435,8 +433,7 @@ class CoreCli(object):
             file_name = os.path.basename(file_path)
         self.log.debug("file_name is : " + file_name)
         if file_size <= 0:
-            msg = "The file '%(filename)s' can not be uploaded \
-because its size is less or equal to zero." % {"filename": str(file_name)}
+            msg = "The file '%(filename)s' can not be uploaded because its size is less or equal to zero." % {"filename": str(file_name)}
             raise LinShareException("-1", msg)
         pbar = None
         stream = file(file_path, 'rb')
@@ -513,7 +510,7 @@ because its size is less or equal to zero." % {"filename": str(file_name)}
                  progress_bar=True, chunk_size=256,
                  directory=None, overwrite=False):
         """ download a file from LinShare using its rest api.
-This method could throw exceptions like urllib2.HTTPError."""
+        This method could throw exceptions like urllib2.HTTPError."""
         self.last_req_time = None
         url = self.get_full_url(url)
         self.log.debug("download url : " + url)
