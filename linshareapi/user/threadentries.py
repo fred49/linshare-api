@@ -34,6 +34,7 @@ from linshareapi.user.core import GenericClass
 from linshareapi.user.core import Time as CTime
 from linshareapi.user.core import CM
 
+import urllib
 
 # pylint: disable=C0111
 # Missing docstring
@@ -147,11 +148,21 @@ class WorkgroupContent(ThreadEntries):
 
     @Time('list')
     @Cache()
-    def list(self, wg_uuid):
+    def list(self, wg_uuid, parent=None):
         url = "%(base)s/%(wg_uuid)s/nodes" % {
             'base': self.local_base_url,
             'wg_uuid': wg_uuid
         }
+        param = {}
+        if parent:
+            # I use only the last folder uuid, the first ones are not really useful
+            if isinstance(parent, (list,)):
+                parent = parent[-1]
+            param['parent'] = parent
+        encode = urllib.urlencode(param)
+        if encode:
+            url += "?"
+            url += encode
         return self.core.list(url)
 
     @Time('upload')
