@@ -45,6 +45,8 @@ class TemplateResource(GenericClass):
 
     # Mandatory: define the base api for the REST resource
     local_base_url = "my_resource"
+    # Mandatory: in which familly we want to cache the current resource
+    cache = {"familly": "my_resource"}
 
     # Mandatory: define the REST resource
     def get_rbu(self):
@@ -81,7 +83,7 @@ class TemplateResource(GenericClass):
     #  * @Invalid() : invalid the cache
 
     @Time('list')
-    @Cache()
+    @Cache(discriminant=True)
     def sample_list(self, domain=None):
         url = "{base}".format(
             base=self.local_base_url

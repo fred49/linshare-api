@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
+"""TODO"""
 
 from __future__ import unicode_literals
 import os
@@ -9,14 +10,12 @@ import logging
 import datetime
 import hashlib
 import tempfile
+from functools import wraps
 from ordereddict import OrderedDict
 
 
-# pylint: disable=C0111
-# Missing docstring
-# pylint: disable=R0903
-# Missing docstring
 def compute_key(cli, familly, discriminant=None):
+    """This function is used to compute a unique key from all connection parametters."""
     hash_key = hashlib.sha256()
     hash_key.update(familly)
     hash_key.update(cli.host)
@@ -37,11 +36,23 @@ def compute_key(cli, familly, discriminant=None):
     cli.log.debug("hash_key: " + hash_key)
     return hash_key
 
-# -----------------------------------------------------------------------------
-class Cache(object):
 
-    def __init__(self, cache_manager, familly, discriminant=None,
+# pylint: disable=too-few-public-methods
+class Cache(object):
+    """Anotaton to cache resources."""
+
+    # pylint: disable=too-many-arguments
+    def __init__(self, cache_manager, familly=None, discriminant=None,
                  arguments=False, cache_duration=None):
+        """Anotaton to cache resources.
+
+           Keyword arguments:
+           cache_manager    -- instance of a CacheManager that will store all data.
+           familly          -- each kind of resource must have its own kind of familly.
+           discriminant     -- how to store different data in the same familly.
+           arguments        -- add all the arguments of the current function as discriminant
+           cache_duration   -- Time to live for the cache.
+        """
         self.cman = cache_manager
         self.familly = familly
         self.discriminant = discriminant
@@ -49,8 +60,15 @@ class Cache(object):
         self.cache_duration = cache_duration
 
     def __call__(self, original_func):
+        """TODO"""
         def wrapper(*args, **kwargs):
+            """TODO"""
             resourceapi = args[0]
+            cache_cfg = resourceapi.cache
+            if cache_cfg.has_key('familly'):
+                self.familly = cache_cfg['familly']
+            if self.familly is None:
+                raise Exception("Invalid familly value for Cache decorator.")
             cli = resourceapi.core
             func_args = []
             if self.arguments:
@@ -72,9 +90,8 @@ class Cache(object):
         return wrapper
 
 
-# -----------------------------------------------------------------------------
 class Invalid(object):
-    def __init__(self, cache_manager, familly, discriminant=None,
+    def __init__(self, cache_manager, familly=None, discriminant=None,
                  whole_familly=False):
         self.cman = cache_manager
         self.familly = familly
@@ -84,6 +101,16 @@ class Invalid(object):
                 self.familly = [familly,]
         self.discriminant = discriminant
 
+    def override_familly(self, args):
+        """Look in the current wrapped object to find a cache configuration to
+        override the current default configuration."""
+        resourceapi = args[0]
+        cache_cfg = resourceapi.cache
+        if cache_cfg.has_key('familly'):
+            self.familly = cache_cfg['familly']
+        if self.familly is None:
+            raise Exception("Invalid familly value for Cache decorator.")
+
     def __call__(self, original_func):
         if self.whole_familly:
             return self.get_invalid_whole_familly(original_func)
@@ -92,6 +119,7 @@ class Invalid(object):
 
     def get_invalid_whole_familly(self, original_func):
         def wrapper(*args, **kwargs):
+            self.override_familly(args)
             for familly in self.familly:
                 self.cman.evict(group=familly)
             return original_func(*args, **kwargs)
@@ -99,6 +127,7 @@ class Invalid(object):
 
     def get_invalid_one_key(self, original_func):
         def wrapper(*args, **kwargs):
+            self.override_familly(args)
             resourceapi = args[0]
             cli = resourceapi.core
             hash_key = compute_key(cli, self.familly, self.discriminant)
@@ -107,7 +136,6 @@ class Invalid(object):
         return wrapper
 
 
-# -----------------------------------------------------------------------------
 class CacheManager(object):
     def __init__(self, cache_duration=60,
                  logger_name="linshareapi.cachemanager"):
@@ -191,8 +219,7 @@ class CacheManager(object):
         with open(cachefile, 'wb') as fde:
             json.dump(data, fde)
 
-from functools import wraps
-# -----------------------------------------------------------------------------
+
 class Time(object):
     def __init__(self, logger_name, return_time=False, info=None, label="execution time : %(time)s"):
         self.log = logging.getLogger(logger_name)
