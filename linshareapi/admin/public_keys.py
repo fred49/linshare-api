@@ -41,12 +41,13 @@ from linshareapi.admin.core import Cache
 
 class PublicKeys(GenericClass):
 
-    # Mandatory: define the base api for the REST resource
     local_base_url = "public_keys"
+    cache = {"familly": "public_keys"}
 
     @Time('list')
-    @Cache()
+    @Cache(discriminant=True)
     def list(self, domain=None):
+        # pylint: disable=arguments-differ
         url = "{base}".format(
             base=self.local_base_url
         )
@@ -59,7 +60,6 @@ class PublicKeys(GenericClass):
             url += encode
         return self.core.list(url)
 
-    # Mandatory: define the REST resource
     def get_rbu(self):
         rbu = ResourceBuilder("public_key")
         rbu.add_field('issuer', required=True)

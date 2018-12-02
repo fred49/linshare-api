@@ -48,17 +48,19 @@ class Time(CTime):
 
 class Cache(CCache):
     def __init__(self, **kwargs):
-        super(Cache, self).__init__(CM, 'resource_key_identifier', **kwargs)
+        super(Cache, self).__init__(CM, **kwargs)
 
 
 class Invalid(IInvalid):
     def __init__(self, **kwargs):
-        super(Invalid, self).__init__(CM, 'resource_key_identifier', **kwargs)
+        super(Invalid, self).__init__(CM, **kwargs)
 
 
 class GenericClass(GGenericClass):
 
     local_base_url = "template_api"
+    cache = {}
+    # ex: cache = {"familly": "template_api"}
 
     @Time('get')
     @Cache()
