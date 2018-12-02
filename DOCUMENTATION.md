@@ -40,56 +40,11 @@ print data[0]
 
 # Resource definition
 
-Each resource should repect the following design :
-(look at guests module for more details)
+  * How to add a new endoint in the admin API
 
-class Guests(GenericClass):
+    * Duplicate the file template_api.py to a new file, use the resource name as the file name:
+      * file name: my_resources.py
+      * class name: class MyResources(GenericClass):
 
-    def get_rbu(self):
-        rbu = ResourceBuilder("guests")
-        rbu.add_field('uuid')
-        rbu.add_field('firstName', required=True)
-        rbu.add_field('lastName', required=True)
-        rbu.add_field('mail', required=True)
-        return rbu
-
-    @Time('list')
-    @Cache()
-    def list(self):
-        url = "guests"
-        return self.core.list(url)
-
-    @Time('get')
-    def get(self, uuid):
-        """ Get one guest."""
-        url = "guests/%(uuid)s" % {
-            'uuid': uuid
-        }
-        return self.core.get(url)
-
-    @Time('delete')
-    @Invalid()
-    def delete(self, uuid):
-        """ Delete one guest."""
-        res = self.get(uuid)
-        url = "guests/%(uuid)s" % {
-            'uuid': uuid
-        }
-        self.core.delete(url)
-        return res
-
-    @Time('update')
-    @Invalid()
-    def update(self, data):
-        """ Update a guest."""
-        self.debug(data)
-        url = "guests"
-        return self.core.update(url, data)
-
-    @Time('create')
-    @Invalid()
-    def create(self, data):
-        self.debug(data)
-        self._check(data)
-        url = "guests"
-        return self.core.create(url, data)
+    * Add the new endpoint to AdminCli in admin/__init__.py
+      * endpoint name: self.my_resources = MyResources(self)
