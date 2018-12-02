@@ -13,6 +13,7 @@ import tempfile
 from functools import wraps
 from ordereddict import OrderedDict
 
+# pylint: disable=missing-docstring
 
 def compute_key(cli, familly, discriminant=None):
     """This function is used to compute a unique key from all connection parametters."""
@@ -114,8 +115,7 @@ class Invalid(object):
     def __call__(self, original_func):
         if self.whole_familly:
             return self.get_invalid_whole_familly(original_func)
-        else:
-            return self.get_invalid_one_key(original_func)
+        return self.get_invalid_one_key(original_func)
 
     def get_invalid_whole_familly(self, original_func):
         def wrapper(*args, **kwargs):
@@ -196,11 +196,11 @@ class CacheManager(object):
                 os.remove(cachefile)
                 return True
             if not group:
-                for group in os.listdir(self.rootcachedir):
-                    if self._has_key(key, group):
-                        cachefile = self._get_cachefile(key, group)
+                for l_group in os.listdir(self.rootcachedir):
+                    if self._has_key(key, l_group):
+                        cachefile = self._get_cachefile(key, l_group)
                         self.log.debug("cached data eviction : %s : %s",
-                                       group, key)
+                                       l_group, key)
                         os.remove(cachefile)
                         return True
         return False
@@ -221,7 +221,8 @@ class CacheManager(object):
 
 
 class Time(object):
-    def __init__(self, logger_name, return_time=False, info=None, label="execution time : %(time)s"):
+    def __init__(self, logger_name, return_time=False, info=None,
+                 label="execution time : %(time)s"):
         self.log = logging.getLogger(logger_name)
         self.return_time = return_time
         self.info = info
@@ -243,6 +244,5 @@ class Time(object):
                 print self.label % {'time': diff}
             if self.return_time:
                 return (diff, res)
-            else:
-                return res
+            return res
         return time_wrapper
