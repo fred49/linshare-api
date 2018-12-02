@@ -592,6 +592,11 @@ class ResourceBuilder(object):
         self._fields = OrderedDict()
         self._required = required
 
+    def add_hook(self, key, hook):
+        field = self._fields.get(key, None)
+        if field is not None:
+            field['hook'] = hook
+
     def add_field(self, field, arg=None, value=None, extended=False,
                   hidden=False, e_type=str, required=None):
         """Add a new field to the current ResourceBuilder.
@@ -674,6 +679,8 @@ class ResourceBuilder(object):
     def load_from_args(self, namespace):
         for field in self._fields.values():
             value = getattr(namespace, field['arg'], None)
+            if field.has_key('hook'):
+                value = field['hook'](value, self)
             if value is not None:
                 field['value'] = value
 
