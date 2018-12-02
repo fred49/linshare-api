@@ -41,6 +41,7 @@ from linshareapi.admin.domainpolicies import DomainPolicies
 from linshareapi.admin.upgradetasks import UpgradeTasks
 from linshareapi.admin.welcomemessages import WelcomeMessages
 from linshareapi.admin.public_keys import PublicKeys
+from linshareapi.admin.jwt_lts import JwtLTS
 
 
 # -----------------------------------------------------------------------------
@@ -68,6 +69,8 @@ class AdminCli(CoreCli):
         self.domain_patterns = ANIY(self, api_version, "domain_patterns")
         self.funcs = ANIY(self, api_version, "funcs")
         self.domain_policies = ANIY(self, api_version, "domain_policies")
+        self.public_keys = ANIY(self, api_version, "public_keys")
+        self.jwt_lts = ANIY(self, api_version, "JwtLTS")
         # API declarations
         if api_version == 0:
             self.threads = Threads(self)
@@ -103,3 +106,4 @@ class AdminCli(CoreCli):
             self.upgrade_tasks = UpgradeTasks(self)
             self.welcome_messages = WelcomeMessages(self)
             self.public_keys = PublicKeys(self)
+            self.jwt_lts = JwtLTS(self)
