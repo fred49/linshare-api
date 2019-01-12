@@ -148,7 +148,7 @@ class WorkgroupContent(ThreadEntries):
 
     @Time('list')
     @Cache()
-    def list(self, wg_uuid, parent=None):
+    def list(self, wg_uuid, parent=None, flat=False):
         url = "%(base)s/%(wg_uuid)s/nodes" % {
             'base': self.local_base_url,
             'wg_uuid': wg_uuid
@@ -160,6 +160,8 @@ class WorkgroupContent(ThreadEntries):
                 if len(parent) >= 1:
                     parent = parent[-1]
             param['parent'] = parent
+        if flat:
+            param['flatDocumentMode'] = True
         encode = urllib.urlencode(param)
         if encode:
             url += "?"
