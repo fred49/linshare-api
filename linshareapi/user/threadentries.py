@@ -157,7 +157,8 @@ class WorkgroupContent(ThreadEntries):
         if parent:
             # I use only the last folder uuid, the first ones are not really useful
             if isinstance(parent, (list,)):
-                parent = parent[-1]
+                if len(parent) >= 1:
+                    parent = parent[-1]
             param['parent'] = parent
         encode = urllib.urlencode(param)
         if encode:
@@ -167,13 +168,24 @@ class WorkgroupContent(ThreadEntries):
 
     @Time('upload')
     @Invalid(whole_familly=True)
-    def upload(self, wg_uuid, file_path, description=None):
+    def upload(self, wg_uuid, file_path, description=None, parent=None):
         """ Upload a file to LinShare using its rest api.
         The uploaded document uuid will be returned"""
         url = "%(base)s/%(wg_uuid)s/nodes" % {
             'base': self.local_base_url,
             'wg_uuid': wg_uuid
         }
+        param = {}
+        if parent:
+            # I use only the last folder uuid, the first ones are not really useful
+            if isinstance(parent, (list,)):
+                if len(parent) >= 1:
+                    parent = parent[-1]
+            param['parent'] = parent
+        encode = urllib.urlencode(param)
+        if encode:
+            url += "?"
+            url += encode
         return self.core.upload(file_path, url, description)
 
     @Time('download')
