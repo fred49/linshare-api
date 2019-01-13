@@ -381,10 +381,57 @@ class CoreCli(object):
         request.add_header('Accept', 'application/json')
         request.get_method = lambda: 'HEAD'
         # Do request
-        ret = self.do_request(request, **kwargs)
-        self.log.debug("""head url : %(url)s : request time : %(time)s""",
-                       {"url": url,
-                        "time": self.last_req_time})
+        self.last_req_time = None
+        starttime = datetime.datetime.now()
+        ret = False
+        try:
+            # doRequest
+            resultq = urllib2.urlopen(request)
+            code = resultq.getcode()
+            self.log.debug("http return code : " + str(code))
+            if code == 200:
+                ret = True
+            if code == 204:
+                ret = True
+            endtime = datetime.datetime.now()
+            self.last_req_time = str(endtime - starttime)
+            self.log.debug("options url : %(url)s : request time : %(time)s",
+                           {"url": url, "time": self.last_req_time})
+            return ret
+        except urllib2.HTTPError as ex:
+            code = "-1"
+            if self.debug >= 3:
+                print "---------- exception -----------"
+                sys.stderr.write(str(type(ex)))
+                sys.stderr.write("\n")
+                sys.stderr.write(str(dir(ex)))
+                sys.stderr.write("\n")
+                sys.stderr.write(str(ex.headers))
+                sys.stderr.write("\n")
+                sys.stderr.write(str(type(ex.msg)))
+                sys.stderr.write("\n")
+                sys.stderr.write(str(ex))
+                sys.stderr.write("\n")
+                sys.stderr.write(ex.msg.decode('unicode-escape').strip('"'))
+                sys.stderr.write("\n")
+                sys.stderr.write("\n")
+                print "--------------------------------"
+            msg = ex.msg.decode('unicode-escape').strip('"')
+            msg = "Http error : " + msg + " (" + str(ex.code) + ")"
+            if self.verbose:
+                self.log.info(msg)
+            else:
+                self.log.debug(msg)
+            if self.debug >= 3:
+                sys.stderr.write("payload : " + ex.read())
+                sys.stderr.write("\n")
+            # request end
+            endtime = datetime.datetime.now()
+            self.last_req_time = str(endtime - starttime)
+            self.log.debug("options url : %(url)s : request time : %(time)s",
+                           {"url": url, "time": self.last_req_time})
+            if ex.code != 404:
+                raise LinShareException(code, msg)
         return ret
 
     def create(self, url, data):
