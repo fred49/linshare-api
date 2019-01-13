@@ -156,6 +156,7 @@ class WorkgroupContent(ThreadEntries):
     @Time('list')
     @Cache()
     def list(self, wg_uuid, parent=None, flat=False):
+        """ Get a list of workgroup nodes."""
         url = "%(base)s/%(wg_uuid)s/nodes" % {
             'base': self.local_base_url,
             'wg_uuid': wg_uuid
