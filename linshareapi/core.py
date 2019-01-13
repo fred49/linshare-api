@@ -517,8 +517,7 @@ class CoreCli(object):
         # Building request
         request = urllib2.Request(url)
         # request.add_header('Content-Type', 'application/json; charset=UTF-8')
-        # request.add_header('Accept', 'application/json;charset=UTF-8')
-        request.add_header('Accept', '*/*; charset=UTF-8')
+        request.add_header('Accept', 'application/json,*/*;charset=UTF-8')
         # request start
         starttime = datetime.datetime.now()
         # doRequest
