@@ -102,6 +102,15 @@ class Threads2(Threads):
         }
         return self.core.get(url)
 
+    @Time('head')
+    def head(self, uuid):
+        """ Get one thread."""
+        url = "%(base)s/%(uuid)s" % {
+            'base': self.local_base_url,
+            'uuid': uuid
+        }
+        return self.core.head(url)
+
     @Time('delete')
     @Invalid()
     def delete(self, uuid):
