@@ -27,6 +27,7 @@
 
 from __future__ import unicode_literals
 
+from linshareapi.core import LinShareException
 from linshareapi.core import ResourceBuilder
 from linshareapi.cache import Cache as CCache
 from linshareapi.cache import Invalid as IInvalid
@@ -162,7 +163,12 @@ class WorkgroupContent(ThreadEntries):
             'wg_uuid': wg_uuid,
             'uuid': uuid
         }
-        return self.core.head(url)
+        # return self.core.head(url)
+        try:
+            # workaround
+            return self.core.get(url)
+        except LinShareException:
+            return False
 
     @Time('list')
     @Cache()
