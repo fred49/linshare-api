@@ -137,13 +137,20 @@ class WorkgroupContent(ThreadEntries):
 
     @Time('get')
     @Cache()
-    def get(self, wg_uuid, uuid):
+    def get(self, wg_uuid, uuid, tree=False):
         """ Get one workgroup member."""
         url = "%(base)s/%(wg_uuid)s/nodes/%(uuid)s" % {
             'base': self.local_base_url,
             'wg_uuid': wg_uuid,
             'uuid': uuid
         }
+        param = {}
+        if tree:
+            param['tree'] = True
+        encode = urllib.urlencode(param)
+        if encode:
+            url += "?"
+            url += encode
         return self.core.get(url)
 
     @Time('list')
