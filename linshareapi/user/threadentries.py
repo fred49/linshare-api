@@ -230,10 +230,10 @@ class WorkgroupContent(ThreadEntries):
 
     def get_rbu(self):
         rbu = ResourceBuilder("documents")
+        rbu.add_field('uuid')
         rbu.add_field('name', required=True)
         rbu.add_field('size')
         rbu.add_field('type', value="FOLDER")
-        rbu.add_field('uuid')
         rbu.add_field('creationDate')
         rbu.add_field('uploadDate')
         rbu.add_field('modificationDate')
