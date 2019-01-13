@@ -153,6 +153,17 @@ class WorkgroupContent(ThreadEntries):
             url += encode
         return self.core.get(url)
 
+    @Time('head')
+    @Cache()
+    def head(self, wg_uuid, uuid):
+        """ Get one workgroup node."""
+        url = "%(base)s/%(wg_uuid)s/nodes/%(uuid)s" % {
+            'base': self.local_base_url,
+            'wg_uuid': wg_uuid,
+            'uuid': uuid
+        }
+        return self.core.head(url)
+
     @Time('list')
     @Cache()
     def list(self, wg_uuid, parent=None, flat=False):
