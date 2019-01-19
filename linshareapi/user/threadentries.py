@@ -306,9 +306,25 @@ class WorkgroupFolders(WorkgroupContent):
         self.debug(data)
         self._check(data)
         wg_uuid = data.get('workGroup')
-        self.log.debug("wg_uuid : %s " % wg_uuid)
+        self.log.debug("wg_uuid : %s ", wg_uuid)
         url = "%(base)s/%(wg_uuid)s/nodes" % {
             'base': self.local_base_url,
             'wg_uuid': wg_uuid
         }
         return self.core.create(url, data)
+
+    @Time('update')
+    @Invalid(whole_familly=True)
+    def update(self, data):
+        """ Update meta of one document."""
+        self.debug(data)
+        self._check(data)
+        wg_uuid = data.get('workGroup')
+        self.log.debug("wg_uuid : %s ", wg_uuid)
+        uuid = data.get('uuid')
+        url = "%(base)s/%(wg_uuid)s/nodes/%(uuid)s" % {
+            'base': self.local_base_url,
+            'wg_uuid': wg_uuid,
+            'uuid': uuid
+        }
+        return self.core.update(url, data)
