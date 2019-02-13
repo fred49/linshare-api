@@ -733,7 +733,9 @@ class ResourceBuilder(object):
     def copy(self, data):
         if isinstance(data, dict):
             for field, val in self._fields.items():
-                val['value'] = data.get(field, "")
+                value = data.get(field, None)
+                if value is not None:
+                    val['value'] = value
 
         if isinstance(data, ResourceBuilder):
             for field, val in self._fields.items():
