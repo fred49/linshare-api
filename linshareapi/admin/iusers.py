@@ -114,5 +114,5 @@ class InconsistentUsers(GenericClass):
         rbu.add_field('restricted', extended=True)
         rbu.add_field('expirationDate', extended=True)
         rbu.add_field('comment', extended=True)
-        rbu.add_field('restrictedContacts', extended=True)
+        rbu.add_field('externalMailLocale', value="EN", extended=True)
         return rbu
