@@ -87,6 +87,7 @@ class AdminCli(CoreCli):
             self.domains = Domains(self)
             self.ldap_connections = LdapConnections2(self)
             self.domain_patterns = DomainPatterns2(self)
+            self.welcome_messages = WelcomeMessages(self)
             self.funcs = Functionalities(self)
             self.domain_policies = DomainPolicies(self)
         elif api_version == 2:
