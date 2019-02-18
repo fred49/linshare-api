@@ -34,6 +34,7 @@ from linshareapi.admin.functionalities import Functionalities
 from linshareapi.admin.threads import  Threads
 from linshareapi.admin.threadmembers import ThreadsMembers
 from linshareapi.admin.users import Users
+from linshareapi.admin.users import Users2
 from linshareapi.admin.iusers import InconsistentUsers
 from linshareapi.admin.ldapconnections import LdapConnections
 from linshareapi.admin.ldapconnections import LdapConnections2
@@ -93,7 +94,7 @@ class AdminCli(CoreCli):
         elif api_version == 2:
             self.threads = Threads(self)
             self.thread_members = ThreadsMembers(self)
-            self.users = Users(self)
+            self.users = Users2(self)
             self.iusers = InconsistentUsers(self)
             self.domains = Domains2(self)
             self.ldap_connections = LdapConnections2(self)

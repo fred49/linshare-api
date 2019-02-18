@@ -38,25 +38,21 @@ from linshareapi.admin.core import CM
 # Missing docstring
 # pylint: disable=R0903
 # Too few public methods
-# -----------------------------------------------------------------------------
 class Time(CTime):
     def __init__(self, suffix, **kwargs):
         super(Time, self).__init__('users.' + suffix, **kwargs)
 
 
-# -----------------------------------------------------------------------------
 class Cache(CCache):
     def __init__(self, **kwargs):
         super(Cache, self).__init__(CM, 'users', **kwargs)
 
 
-# -----------------------------------------------------------------------------
 class Invalid(IInvalid):
     def __init__(self, **kwargs):
         super(Invalid, self).__init__(CM, 'users', **kwargs)
 
 
-# -----------------------------------------------------------------------------
 class Users(GenericClass):
 
     @Time('search')
@@ -118,4 +114,86 @@ class Users(GenericClass):
         rbu.add_field('expirationDate', extended=True)
         rbu.add_field('comment', extended=True)
         rbu.add_field('restrictedContacts', extended=True)
+        return rbu
+
+
+class Users2(Users):
+
+    local_base_url = "users"
+
+    @Time('invalid')
+    @Invalid()
+    def invalid(self):
+        return "invalid : ok"
+
+    # @Time('list')
+    # @Cache()
+    # def list(self):
+    #     """ List all documents store into LinShare."""
+    #     url = self.local_base_url
+    #     return self.core.list(url)
+
+    @Time('get')
+    def get(self, uuid):
+        """ Get one user."""
+        url = "%(base)s/%(uuid)s" % {
+            'base': self.local_base_url,
+            'uuid': uuid
+        }
+        return self.core.get(url)
+
+    @Time('head')
+    def head(self, uuid):
+        """ Get one user."""
+        url = "%(base)s/%(uuid)s" % {
+            'base': self.local_base_url,
+            'uuid': uuid
+        }
+        return self.core.head(url)
+
+    @Time('delete')
+    @Invalid()
+    def delete(self, uuid):
+        """ Delete one user."""
+        res = self.get(uuid)
+        url = "%(base)s/%(uuid)s" % {
+            'base': self.local_base_url,
+            'uuid': uuid
+        }
+        self.core.delete(url)
+        return res
+
+    @Time('update')
+    @Invalid()
+    def update(self, data):
+        """ Update an user."""
+        self.debug(data)
+        url = "%(base)s" % {
+            'base': self.local_base_url,
+        }
+        return self.core.update(url, data)
+
+    @Time('create')
+    @Invalid()
+    def create(self, data):
+        self.debug(data)
+        self._check(data)
+        url = self.local_base_url
+        return self.core.create(url, data)
+
+    def get_rbu(self):
+        rbu = ResourceBuilder("users")
+        rbu.add_field('lastName')
+        rbu.add_field('firstName')
+        rbu.add_field('mail', required=True)
+        rbu.add_field('domain', required=True)
+        rbu.add_field('role')
+        rbu.add_field('accountType')
+        rbu.add_field('locale')
+        rbu.add_field('creationDate')
+        rbu.add_field('modificationDate')
+        rbu.add_field('uuid', extended=True)
+        rbu.add_field('canUpload', extended=True)
+        rbu.add_field('canCreateGuest', extended=True)
+        rbu.add_field('externalMailLocale', extended=True)
         return rbu
