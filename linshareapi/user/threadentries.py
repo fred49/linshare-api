@@ -178,15 +178,18 @@ class WorkgroupContent(ThreadEntries):
             'base': self.local_base_url,
             'wg_uuid': wg_uuid
         }
-        param = {}
+        param = []
         if parent:
             # I use only the last folder uuid, the first ones are not really useful
             if isinstance(parent, (list,)):
                 if len(parent) >= 1:
                     parent = parent[-1]
-            param['parent'] = parent
+            param.append(("parent", parent))
         if flat:
-            param['flatDocumentMode'] = True
+            param.append(("flat", True))
+        if node_types:
+            for node_type in node_types:
+                param.append(("type", node_type))
         encode = urllib.urlencode(param)
         if encode:
             url += "?"
