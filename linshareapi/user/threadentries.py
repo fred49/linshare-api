@@ -137,7 +137,7 @@ class WorkgroupContent(ThreadEntries):
     local_base_url = "work_groups"
 
     @Time('get')
-    @Cache(discriminant="get", arguments=True)
+    # @Cache(discriminant="get", arguments=True)
     def get(self, wg_uuid, uuid, tree=False):
         """ Get one workgroup member."""
         url = "%(base)s/%(wg_uuid)s/nodes/%(uuid)s" % {
@@ -155,7 +155,7 @@ class WorkgroupContent(ThreadEntries):
         return self.core.get(url)
 
     @Time('head')
-    @Cache(discriminant="head", arguments=True)
+    # @Cache(discriminant="head", arguments=True)
     def head(self, wg_uuid, uuid):
         """ Get one workgroup node."""
         url = "%(base)s/%(wg_uuid)s/nodes/%(uuid)s" % {
@@ -171,7 +171,7 @@ class WorkgroupContent(ThreadEntries):
             return False
 
     @Time('list')
-    @Cache(arguments=True)
+    # @Cache(arguments=True)
     def list(self, wg_uuid, parent=None, flat=False, node_types=None):
         """ Get a list of workgroup nodes."""
         url = "%(base)s/%(wg_uuid)s/nodes" % {
