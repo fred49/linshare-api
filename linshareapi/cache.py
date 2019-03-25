@@ -51,7 +51,9 @@ class Cache(object):
            cache_manager    -- instance of a CacheManager that will store all data.
            familly          -- each kind of resource must have its own kind of familly.
            discriminant     -- how to store different data in the same familly.
-           arguments        -- add all the arguments of the current function as discriminant
+                               it will be used to compute a different cache key.
+           arguments        -- add all the arguments (query params) of the
+                               current function as discriminant for cache key
            cache_duration   -- Time to live for the cache.
         """
         self.cman = cache_manager
@@ -94,6 +96,16 @@ class Cache(object):
 class Invalid(object):
     def __init__(self, cache_manager, familly=None, discriminant=None,
                  whole_familly=False):
+        """Anotaton to invalid cached resources.
+
+           Keyword arguments:
+           cache_manager    -- instance of a CacheManager that will store all data.
+           familly          -- each kind of resource must have its own kind of familly.
+           discriminant     -- how to store different data in the same familly.
+                               it will be used to compute a different cache key.
+           whole_familly    -- invalid familly and all related cached resources
+                               cf discriminant options
+        """
         self.cman = cache_manager
         self.familly = familly
         self.whole_familly = whole_familly
