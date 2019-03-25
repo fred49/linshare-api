@@ -121,6 +121,8 @@ class Invalid(object):
         cache_cfg = resourceapi.cache
         if cache_cfg.has_key('familly'):
             self.familly = cache_cfg['familly']
+        if cache_cfg.has_key('whole_familly'):
+            self.whole_familly = cache_cfg['whole_familly']
         if self.familly is None:
             raise Exception("Invalid familly value for Cache decorator.")
 
@@ -140,10 +142,16 @@ class Invalid(object):
     def get_invalid_one_key(self, original_func):
         def wrapper(*args, **kwargs):
             self.override_familly(args)
-            resourceapi = args[0]
-            cli = resourceapi.core
-            hash_key = compute_key(cli, self.familly, self.discriminant)
-            self.cman.evict(hash_key, self.familly)
+            if self.whole_familly:
+                if not isinstance(self.familly, list):
+                    self.familly = [self.familly,]
+                for familly in self.familly:
+                    self.cman.evict(group=familly)
+            else:
+                resourceapi = args[0]
+                cli = resourceapi.core
+                hash_key = compute_key(cli, self.familly, self.discriminant)
+                self.cman.evict(hash_key, self.familly)
             return original_func(*args, **kwargs)
         return wrapper
 
