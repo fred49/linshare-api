@@ -343,6 +343,7 @@ class CoreCli(object):
         # Building request
         request = urllib2.Request(url)
         request.add_header('Accept', 'application/json')
+        request.add_header('Content-Type', 'application/json; charset=UTF-8')
         if data:
             # Building request
             post_data = json.dumps(data).encode("UTF-8")
