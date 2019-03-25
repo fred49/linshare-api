@@ -60,7 +60,11 @@ class GenericClass(GGenericClass):
 
     local_base_url = "template_api"
     cache = {}
-    # ex: cache = {"familly": "template_api"}
+    # ex:
+    # cache = {
+    #     "familly": "template_api",
+    #     "whole_familly": True,
+    # }
 
     @Time('get')
     @Cache()
