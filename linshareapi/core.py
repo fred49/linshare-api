@@ -634,6 +634,12 @@ class CoreCli(object):
 class ResourceBuilder(object):
     """ Helper to create a ressource """
 
+    """Create a new ResourceBuilder:
+
+        Keyword arguments:
+        name        -- resource name (display purpose)
+        required    -- defined default required value for all fields.
+    """
     def __init__(self, name=None, required=False):
         self._name = name
         self._fields = OrderedDict()
@@ -656,7 +662,7 @@ class ResourceBuilder(object):
                        extended list mode only.
            hidden   -- If set to true, the current field won't be exposed
                        as available keys.
-           e_type   -- field data type (default str)
+           e_type   -- field data type (default str): int, float, str
            required -- True if the current field is required for create
                        and update methods
         """
