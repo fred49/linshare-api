@@ -644,6 +644,10 @@ class ResourceBuilder(object):
         self._name = name
         self._fields = OrderedDict()
         self._required = required
+        l_name = "rbu"
+        if name:
+            l_name = "rbu:" + name
+        self.log = logging.getLogger(l_name)
 
     def add_hook(self, key, hook):
         field = self._fields.get(key, None)
@@ -731,22 +735,34 @@ class ResourceBuilder(object):
 
     def load_from_args(self, namespace):
         for field in self._fields.values():
+            self.log.debug("config: %s", field)
             value = getattr(namespace, field['arg'], None)
-            if field.has_key('hook'):
-                value = field['hook'](value, self)
             if value is not None:
+                if field.has_key('hook'):
+                    value = field['hook'](value, self)
                 field['value'] = value
 
     def copy(self, data):
         if isinstance(data, dict):
+            self.log.debug("dict")
             for field, val in self._fields.items():
+                self.log.debug("field: %s", field)
+                self.log.debug("config: %s", val)
                 value = data.get(field, None)
+                self.log.debug("value: %s", value)
                 if value is not None:
                     val['value'] = value
-
-        if isinstance(data, ResourceBuilder):
+        elif isinstance(data, ResourceBuilder):
+            self.log.debug("rbu")
             for field, val in self._fields.items():
-                val['value'] = data[field]['value']
+                self.log.debug("field: %s", field)
+                self.log.debug("config: %s", val)
+                value = data[field]['value']
+                self.log.debug("value: %s", value)
+                val['value'] = value
+        else:
+            self.log.debug("type: %s", type(data))
+            raise ValueError("Invalid input data")
 
     def __str__(self):
         return json.dumps(self.to_resource(), sort_keys=True, indent=2)
