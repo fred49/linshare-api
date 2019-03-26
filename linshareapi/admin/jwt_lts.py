@@ -31,6 +31,7 @@ from __future__ import unicode_literals
 import urllib
 
 from linshareapi.core import ResourceBuilder
+from linshareapi.core import LinShareException
 from linshareapi.admin.core import GenericClass
 from linshareapi.admin.core import Time
 from linshareapi.admin.core import Cache
@@ -48,9 +49,7 @@ class JwtLTS(GenericClass):
         "whole_familly": True
     }
 
-    @Time('list')
-    @Cache(arguments=True)
-    def list(self, domain=None):
+    def _list(self, domain=None):
         # pylint: disable=arguments-differ
         url = "{base}".format(
             base=self.local_base_url
@@ -64,7 +63,42 @@ class JwtLTS(GenericClass):
             url += encode
         return self.core.list(url)
 
-    # Mandatory: define the REST resource
+    @Time('list')
+    @Cache(discriminant="list", arguments=True)
+    def list(self, domain=None):
+        """Workaround: data is automatically filtered by domain."""
+        # pylint: disable=arguments-differ
+        if domain:
+            return self._list(domain)
+        url = "{base}".format(
+            base="domains"
+        )
+        domains = self.core.get(url)
+        res = []
+        for dom in domains:
+            domain_uuid = dom.get('identifier')
+            url = "{base}".format(
+                base=self.local_base_url
+            )
+            param = {
+                'domainUuid': domain_uuid
+            }
+            encode = urllib.urlencode(param)
+            if encode:
+                url += "?"
+                url += encode
+            res += self.core.list(url)
+        return res
+
+    @Time('get')
+    @Cache(arguments=True)
+    def get(self, uuid):
+        """Workaround: missing get entry point"""
+        for token in self.list():
+            if token.get('uuid') == uuid:
+                return token
+        raise LinShareException(-1, "Can find uuid:" + uuid)
+
     def get_rbu(self):
         rbu = ResourceBuilder("jwt_lts")
         rbu.add_field('issuer')

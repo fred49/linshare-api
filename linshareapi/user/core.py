@@ -63,7 +63,7 @@ class GenericClass(GGenericClass):
     # ex: cache = {"familly": "template_api"}
 
     @Time('get')
-    @Cache()
+    @Cache(arguments=True)
     def get(self, uuid):
         """TODO"""
         url = "{base}/{uuid}".format(
