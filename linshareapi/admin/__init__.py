@@ -41,19 +41,21 @@ from linshareapi.admin.domainpolicies import DomainPolicies
 from linshareapi.admin.upgradetasks import UpgradeTasks
 from linshareapi.admin.welcomemessages import WelcomeMessages
 from linshareapi.admin.public_keys import PublicKeys
-from linshareapi.admin.jwt_lts import JwtLTS
+from linshareapi.admin.jwt import Jwt
 
 
-# -----------------------------------------------------------------------------
 class AdminCli(CoreCli):
-    # pylint: disable=R0902
+    """TODO"""
+    # pylint: disable=too-many-instance-attributes
 
     VERSION = 2
     VERSIONS = [0, 1, 2]
 
+    # pylint: disable=too-many-arguments
+    # pylint: disable=too-many-statements
     def __init__(self, host, user, password, verbose, debug, api_version=None):
         super(AdminCli, self).__init__(host, user, password, verbose, debug)
-        self.log.debug("api_version : " + str(api_version))
+        self.log.debug("api_version : %s", api_version)
         if api_version is None:
             api_version = self.VERSION
         if api_version not in self.VERSIONS:
@@ -70,7 +72,7 @@ class AdminCli(CoreCli):
         self.funcs = ANIY(self, api_version, "funcs")
         self.domain_policies = ANIY(self, api_version, "domain_policies")
         self.public_keys = ANIY(self, api_version, "public_keys")
-        self.jwt_lts = ANIY(self, api_version, "JwtLTS")
+        self.jwt = ANIY(self, api_version, "jwt")
         # API declarations
         if api_version == 0:
             self.threads = Threads(self)
@@ -106,4 +108,4 @@ class AdminCli(CoreCli):
             self.upgrade_tasks = UpgradeTasks(self)
             self.welcome_messages = WelcomeMessages(self)
             self.public_keys = PublicKeys(self)
-            self.jwt_lts = JwtLTS(self)
+            self.jwt = Jwt(self)
