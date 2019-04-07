@@ -40,12 +40,12 @@ from linshareapi.admin.core import Invalid
 # pylint: disable=missing-docstring
 # pylint: disable=too-few-public-methods
 
-class JwtLTS(GenericClass):
+class Jwt(GenericClass):
 
     local_base_url = "jwt"
     # Mandatory: in which familly we want to cache the current resource
     cache = {
-        "familly": "jwt_lts",
+        "familly": "jwt",
         "whole_familly": True
     }
 
@@ -100,15 +100,15 @@ class JwtLTS(GenericClass):
         raise LinShareException(-1, "Can find uuid:" + uuid)
 
     def get_rbu(self):
-        rbu = ResourceBuilder("jwt_lts")
-        rbu.add_field('issuer')
+        rbu = ResourceBuilder("jwt")
         rbu.add_field('label')
         rbu.add_field('subject')
         rbu.add_field('uuid')
         rbu.add_field('description')
         rbu.add_field('creationDate')
         rbu.add_field('domain', extended=True)
-        rbu.add_field('actor', extended=True)
+        rbu.add_field('actor', required=True, extended=True)
+        rbu.add_field('issuer', extended=True)
         def to_generic_object(value, context):
             # pylint: disable=unused-argument
             return {'uuid': value}
