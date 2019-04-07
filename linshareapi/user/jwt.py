@@ -40,6 +40,35 @@ from linshareapi.user.core import Invalid
 # pylint: disable=missing-docstring
 # pylint: disable=too-few-public-methods
 
+class JwtAudit(GenericClass):
+
+    local_base_url = "jwt/audit"
+
+    cache = {
+        "familly": "jwt/audit",
+        "whole_familly": True
+    }
+
+    @Time('audit-list')
+    @Cache(discriminant="audit-list", arguments=True)
+    def list(self):
+        url = "{base}".format(
+            base=self.local_base_url
+        )
+        return self.core.list(url)
+
+    def get_rbu(self):
+        rbu = ResourceBuilder("jwt")
+        rbu.add_field('action')
+        rbu.add_field('creationDate')
+        rbu.add_field('authUser')
+        rbu.add_field('actor', extended=True)
+        rbu.add_field('resource')
+        rbu.add_field('uuid', extended=True)
+        rbu.add_field('type', extended=True)
+        return rbu
+
+
 class Jwt(GenericClass):
 
     local_base_url = "jwt"
