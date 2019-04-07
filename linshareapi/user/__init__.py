@@ -50,6 +50,7 @@ from linshareapi.user.users import Users2
 from linshareapi.user.guests import Guests
 from linshareapi.user.shares import Shares2
 from linshareapi.user.jwt import Jwt
+from linshareapi.user.jwt import JwtAudit
 
 
 
@@ -116,3 +117,4 @@ class UserCli(CoreCli):
             self.contactslists = ContactsList2(self)
             self.contactslistscontacts = ContactsListContact2(self)
             self.jwt = Jwt(self)
+            self.jwt.audit = JwtAudit(self)
