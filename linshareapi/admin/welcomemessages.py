@@ -137,3 +137,7 @@ class WelcomeMessages(GenericClass):
         )
         # server does not support uuid in URL for update.
         return self.core.update(self.local_base_url, data)
+
+    @CCache(CM, 'wlcmsg-languages', cache_duration=3600)
+    def languages(self):
+        return self.core.options("enums/supported_language")
