@@ -51,7 +51,7 @@ from linshareapi.user.guests import Guests
 from linshareapi.user.shares import Shares2
 from linshareapi.user.jwt import Jwt
 from linshareapi.user.jwt import JwtAudit
-
+from linshareapi.user.authentication import Authentication
 
 
 # -----------------------------------------------------------------------------
@@ -78,6 +78,7 @@ class UserCli(CoreCli):
         self.contactslistscontacts = ANIY(self, api_version,
                                           "contactslistscontacts")
         self.jwt = ANIY(self, api_version, "jwt")
+        self.authentication = Authentication(self)
         # API declarations
         if api_version == 0:
             self.documents = Documents(self)
