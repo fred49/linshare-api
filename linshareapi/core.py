@@ -197,7 +197,7 @@ class CoreCli(object):
         root_url += url_frament
         return root_url
 
-    def auth(self):
+    def auth(self, quiet=False):
         url = self.get_full_url("authentication/authorized")
         self.log.debug("list url : " + url)
         # Building request
@@ -212,11 +212,12 @@ class CoreCli(object):
                 self.log.debug("auth url : ok")
                 return True
         except urllib2.HTTPError as ex:
-            msg = ex.msg.decode('unicode-escape').strip('"')
-            if ex.code == 401:
-                self.log.error(msg + " (" + str(ex.code) + ")")
-            else:
-                self.log.error(msg + " (" + str(ex.code) + ")")
+            if not quiet:
+                msg = ex.msg.decode('unicode-escape').strip('"')
+                if ex.code == 401:
+                    self.log.error(msg + " (" + str(ex.code) + ")")
+                else:
+                    self.log.error(msg + " (" + str(ex.code) + ")")
         return False
 
     def add_auth_header(self, request):
