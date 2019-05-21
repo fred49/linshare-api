@@ -44,6 +44,7 @@ from linshareapi.admin.public_keys import PublicKeys
 from linshareapi.admin.jwt import Jwt
 from linshareapi.admin.authentication import Authentication
 from linshareapi.admin.mail_configs import MailConfigs
+from linshareapi.admin.mail_attachments import MailAttachments
 
 
 class AdminCli(CoreCli):
@@ -77,6 +78,7 @@ class AdminCli(CoreCli):
         self.jwt = ANIY(self, api_version, "jwt")
         self.authentication = Authentication(self)
         self.mail_configs = MailConfigs(self)
+        self.mail_attachments = MailAttachments(self)
         # API declarations
         if api_version == 0:
             self.threads = Threads(self)

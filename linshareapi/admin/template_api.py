@@ -18,7 +18,7 @@
 # You should have received a copy of the GNU General Public License
 # along with LinShare api.  If not, see <http://www.gnu.org/licenses/>.
 #
-# Copyright 2018 Frédéric MARTIN
+# Copyright 2019 Frédéric MARTIN
 #
 # Contributors list :
 #
