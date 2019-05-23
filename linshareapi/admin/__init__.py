@@ -50,8 +50,9 @@ class AdminCli(CoreCli):
     """TODO"""
     # pylint: disable=too-many-instance-attributes
 
-    VERSION = 2
-    VERSIONS = [0, 1, 2]
+    VERSION = 2.2
+    VERSIONS = [0, 1, 2, 2.2]
+
 
     # pylint: disable=too-many-arguments
     # pylint: disable=too-many-statements
@@ -99,7 +100,7 @@ class AdminCli(CoreCli):
             self.welcome_messages = WelcomeMessages(self)
             self.funcs = Functionalities(self)
             self.domain_policies = DomainPolicies(self)
-        elif api_version == 2:
+        elif api_version >= 2:
             self.threads = Threads(self)
             self.thread_members = ThreadsMembers(self)
             self.users = Users(self)
@@ -112,4 +113,5 @@ class AdminCli(CoreCli):
             self.upgrade_tasks = UpgradeTasks(self)
             self.welcome_messages = WelcomeMessages(self)
             self.public_keys = PublicKeys(self)
+        if api_version >= 2.2:
             self.jwt = Jwt(self)

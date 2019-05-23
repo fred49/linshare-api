@@ -54,13 +54,16 @@ from linshareapi.user.jwt import JwtAudit
 from linshareapi.user.authentication import Authentication
 
 
-# -----------------------------------------------------------------------------
 class UserCli(CoreCli):
+    """TODO"""
+    # pylint: disable=too-many-instance-attributes
 
-    VERSION = 2
-    VERSIONS = [0, 1, 2]
+    VERSION = 2.2
+    VERSIONS = [0, 1, 2, 2.2]
 
     def __init__(self, host, user, password, verbose, debug, api_version=None):
+        # pylint: disable=too-many-arguments
+        # pylint: disable=too-many-statements
         super(UserCli, self).__init__(host, user, password, verbose, debug)
         if api_version is None:
             api_version = self.VERSION
@@ -78,6 +81,7 @@ class UserCli(CoreCli):
         self.contactslistscontacts = ANIY(self, api_version,
                                           "contactslistscontacts")
         self.jwt = ANIY(self, api_version, "jwt")
+        self.jwt.audit = ANIY(self, api_version, "jwt.audit")
         self.authentication = Authentication(self)
         # API declarations
         if api_version == 0:
@@ -101,7 +105,7 @@ class UserCli(CoreCli):
             self.guests = Guests(self)
             self.contactslists = ContactsList(self)
             self.contactslistscontacts = ContactsListContact(self)
-        elif api_version == 2:
+        elif api_version >= 2:
             self.base_url = "linshare/webservice/rest/user/v2"
             self.users = Users2(self)
             self.documents = Documents2(self)
@@ -117,5 +121,6 @@ class UserCli(CoreCli):
             self.guests = Guests(self)
             self.contactslists = ContactsList2(self)
             self.contactslistscontacts = ContactsListContact2(self)
+        if api_version >= 2.2:
             self.jwt = Jwt(self)
             self.jwt.audit = JwtAudit(self)
