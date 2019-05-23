@@ -41,25 +41,21 @@ import urllib
 # Missing docstring
 # pylint: disable=R0903
 # Too few public methods
-# -----------------------------------------------------------------------------
 class Time(CTime):
     def __init__(self, suffix, **kwargs):
         super(Time, self).__init__('tdocuments.' + suffix, **kwargs)
 
 
-# -----------------------------------------------------------------------------
 class Cache(CCache):
     def __init__(self, **kwargs):
         super(Cache, self).__init__(CM, 'tdocuments', **kwargs)
 
 
-# -----------------------------------------------------------------------------
 class Invalid(IInvalid):
     def __init__(self, **kwargs):
         super(Invalid, self).__init__(CM, 'tdocuments', **kwargs)
 
 
-# -----------------------------------------------------------------------------
 class ThreadEntries(GenericClass):
 
     @Time('get')
@@ -131,7 +127,6 @@ class ThreadEntries(GenericClass):
         return rbu
 
 
-# -----------------------------------------------------------------------------
 class WorkgroupContent(ThreadEntries):
 
     local_base_url = "work_groups"
@@ -266,9 +261,8 @@ class WorkgroupContent(ThreadEntries):
         rbu.add_field('uploadDate')
         rbu.add_field('modificationDate')
         rbu.add_field('parent')
-        rbu.add_field('lastAuthor', extended=True)
+        rbu.add_field('lastAuthor', extended=False)
         rbu.add_field('mimeType', extended=True)
-        rbu.add_field('nodeType', extended=True)
         rbu.add_field('hasRevision', extended=True)
         rbu.add_field('hasThumbnail', extended=True)
         rbu.add_field('description', extended=True)
@@ -277,15 +271,7 @@ class WorkgroupContent(ThreadEntries):
         rbu.add_field('metaData', extended=True)
         return rbu
 
-#            "lastAuthor": {
-#                      "accountType": "INTERNAL",
-#                      "mail": "user1@linshare.org",
-#                      "name": "John Doe",
-#                      "uuid": "eb84401d-1a60-4aaf-b843-3292a36da825"
-#                    },
 
-
-# -----------------------------------------------------------------------------
 class WorkgroupFolders(WorkgroupContent):
 
     def get_rbu(self):
