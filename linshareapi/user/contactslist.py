@@ -123,7 +123,15 @@ class ContactsList(GenericClass):
         return self.core.create(url, data)
 
 
-# -----------------------------------------------------------------------------
 class ContactsList2(ContactsList):
 
     local_base_url = "contact_lists"
+
+    def get_rbu(self):
+        rbu = ResourceBuilder("contactslist")
+        rbu.add_field('uuid')
+        rbu.add_field('name', required=True)
+        rbu.add_field('public', value=False)
+        rbu.add_field('owner', extended=True)
+        rbu.add_field('description', extended=True)
+        return rbu
