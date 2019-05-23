@@ -56,7 +56,6 @@ class Invalid(IInvalid):
         super(Invalid, self).__init__(CM, 'contactslistcontact', **kwargs)
 
 
-# -----------------------------------------------------------------------------
 class ContactsListContact(GenericClass):
 
     local_base_url = "lists"
@@ -133,7 +132,29 @@ class ContactsListContact(GenericClass):
         return data
 
 
-# -----------------------------------------------------------------------------
 class ContactsListContact2(ContactsListContact):
 
     local_base_url = "contact_lists"
+
+    @Time('get')
+    def get(self, list_uuid, uuid):
+        """ Get one contact's list."""
+        # workaround
+        res = self.list(list_uuid)
+        for elt in res:
+            if elt.get('uuid') == uuid:
+                return elt
+        return None
+
+    @Time('delete')
+    @Invalid()
+    def delete(self, list_uuid, uuid):
+        """ Delete one list."""
+        res = self.get(list_uuid, uuid)
+        url = "%(base)s/%(list_uuid)s/contacts/%(uuid)s" % {
+            'base': self.local_base_url,
+            'list_uuid': list_uuid,
+            'uuid': uuid
+        }
+        self.core.delete(url)
+        return res
