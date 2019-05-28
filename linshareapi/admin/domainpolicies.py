@@ -103,6 +103,7 @@ class DomainPolicies(GenericClass):
     def get_rbu(self):
         rbu = ResourceBuilder("domain_policies")
         rbu.add_field('identifier', required=True)
+        rbu.add_field('label', required=True)
         rbu.add_field('description')
         rbu.add_field('accessPolicy', extended=True, value={"rules":[]})
         return rbu
