@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
+"""TODO"""
 
 
 # This file is part of Linshare api.
@@ -33,6 +34,7 @@ from linshareapi.admin.domainpatterns import DomainPatterns2
 from linshareapi.admin.functionalities import Functionalities
 from linshareapi.admin.threads import  Threads
 from linshareapi.admin.threadmembers import ThreadsMembers
+from linshareapi.admin.threadmembers import ThreadsMembers2
 from linshareapi.admin.users import Users
 from linshareapi.admin.iusers import InconsistentUsers
 from linshareapi.admin.ldapconnections import LdapConnections
@@ -102,7 +104,7 @@ class AdminCli(CoreCli):
             self.domain_policies = DomainPolicies(self)
         elif api_version >= 2:
             self.threads = Threads(self)
-            self.thread_members = ThreadsMembers(self)
+            self.thread_members = ThreadsMembers2(self)
             self.users = Users(self)
             self.iusers = InconsistentUsers(self)
             self.domains = Domains2(self)
