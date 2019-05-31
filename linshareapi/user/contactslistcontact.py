@@ -1,5 +1,7 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
+"""TODO"""
+
 
 
 # This file is part of Linshare api.
@@ -34,29 +36,32 @@ from linshareapi.user.core import GenericClass
 from linshareapi.user.core import Time as CTime
 from linshareapi.user.core import CM
 
-# pylint: disable=C0111
-# Missing docstring
-# pylint: disable=R0903
-# Too few public methods
-# -----------------------------------------------------------------------------
 class Time(CTime):
+    """TODO"""
+    # pylint: disable=too-few-public-methods
+
     def __init__(self, suffix, **kwargs):
         super(Time, self).__init__('contactslistcontact.' + suffix, **kwargs)
 
 
-# -----------------------------------------------------------------------------
 class Cache(CCache):
+    """TODO"""
+    # pylint: disable=too-few-public-methods
+
     def __init__(self, **kwargs):
         super(Cache, self).__init__(CM, 'contactslistcontact', **kwargs)
 
 
-# -----------------------------------------------------------------------------
 class Invalid(IInvalid):
+    """TODO"""
+
     def __init__(self, **kwargs):
         super(Invalid, self).__init__(CM, 'contactslistcontact', **kwargs)
 
 
 class ContactsListContact(GenericClass):
+    """TODO"""
+
 
     local_base_url = "lists"
 
@@ -77,6 +82,7 @@ class ContactsListContact(GenericClass):
     @Time('list')
     @Cache()
     def list(self, list_uuid):
+        # pylint: disable=arguments-differ
         url = "%(base)s/%(list_uuid)s/contacts" % {
             'base': self.local_base_url,
             'list_uuid': list_uuid
@@ -86,6 +92,7 @@ class ContactsListContact(GenericClass):
     @Time('get')
     def get(self, list_uuid, uuid):
         """ Get one contact's list."""
+        # pylint: disable=arguments-differ
         url = "%(base)s/%(list_uuid)s/contacts/%(uuid)s" % {
             'base': self.local_base_url,
             'list_uuid': list_uuid,
@@ -97,6 +104,7 @@ class ContactsListContact(GenericClass):
     @Invalid()
     def delete(self, list_uuid, uuid):
         """ Delete one list."""
+        # pylint: disable=arguments-differ
         res = self.get(list_uuid, uuid)
         url = "%(base)s/%(list_uuid)s/contacts/%(uuid)s" % {
             'base': self.local_base_url,
@@ -133,6 +141,7 @@ class ContactsListContact(GenericClass):
 
 
 class ContactsListContact2(ContactsListContact):
+    """TODO"""
 
     local_base_url = "contact_lists"
 
