@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
+"""TODO"""
 
 
 # This file is part of Linshare api.
@@ -35,30 +36,32 @@ from linshareapi.user.core import Time as CTime
 from linshareapi.user.core import CM
 
 
-# pylint: disable=C0111
-# Missing docstring
-# pylint: disable=R0903
-# Too few public methods
-# -----------------------------------------------------------------------------
 class Time(CTime):
+    """TODO"""
+    # pylint: disable=too-few-public-methods
+
     def __init__(self, suffix, **kwargs):
         super(Time, self).__init__('threads.' + suffix, **kwargs)
 
 
-# -----------------------------------------------------------------------------
 class Cache(CCache):
+    """TODO"""
+    # pylint: disable=too-few-public-methods
+
     def __init__(self, **kwargs):
         super(Cache, self).__init__(CM, 'threads', **kwargs)
 
 
-# -----------------------------------------------------------------------------
 class Invalid(IInvalid):
+    """TODO"""
+    # pylint: disable=too-few-public-methods
+
     def __init__(self, **kwargs):
         super(Invalid, self).__init__(CM, 'threads', **kwargs)
 
 
-# -----------------------------------------------------------------------------
 class Threads(GenericClass):
+    """TODO"""
 
     local_base_url = "threads"
 
@@ -90,8 +93,8 @@ class Threads(GenericClass):
         return rbu
 
 
-# -----------------------------------------------------------------------------
 class Threads2(Threads):
+    """TODO"""
 
     @Time('get')
     def get(self, uuid):
@@ -143,7 +146,7 @@ class Threads2(Threads):
         return self.core.create(url, data)
 
 
-# -----------------------------------------------------------------------------
 class Workgroup(Threads2):
+    """TODO"""
 
     local_base_url = "work_groups"
