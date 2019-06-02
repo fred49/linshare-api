@@ -27,6 +27,7 @@
 
 from linshareapi.core import CoreCli
 from linshareapi.core import ApiNotImplementedYet as ANIY
+from linshareapi.core import GenericClass
 from linshareapi.admin.domains import Domains
 from linshareapi.admin.domains import Domains2
 from linshareapi.admin.domainpatterns import DomainPatterns
@@ -80,6 +81,7 @@ class AdminCli(CoreCli):
         self.jwt = ANIY(self, api_version, "jwt")
         self.authentication = Authentication(self)
         self.mail_configs = MailConfigs(self)
+        self.raw = GenericClass(self)
         # API declarations
         if api_version == 0:
             self.threads = Threads(self)

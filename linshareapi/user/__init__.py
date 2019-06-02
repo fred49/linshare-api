@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
+"""TODO"""
 
 
 # This file is part of Linshare api.
@@ -26,6 +27,7 @@
 
 from linshareapi.core import CoreCli
 from linshareapi.core import ApiNotImplementedYet as ANIY
+from linshareapi.core import GenericClass
 from linshareapi.user.users import Users
 from linshareapi.user.rshares import ReceivedShares
 from linshareapi.user.shares import Shares
@@ -83,6 +85,7 @@ class UserCli(CoreCli):
         self.jwt = ANIY(self, api_version, "jwt")
         self.jwt.audit = ANIY(self, api_version, "jwt.audit")
         self.authentication = Authentication(self)
+        self.raw = GenericClass(self)
         # API declarations
         if api_version == 0:
             self.documents = Documents(self)
