@@ -28,14 +28,11 @@
 
 from __future__ import unicode_literals
 
-import urllib
-
 from linshareapi.core import ResourceBuilder
 from linshareapi.core import LinShareException
 from linshareapi.user.core import GenericClass
 from linshareapi.user.core import Time
 from linshareapi.user.core import Cache
-from linshareapi.user.core import Invalid
 
 # pylint: disable=missing-docstring
 # pylint: disable=too-few-public-methods
@@ -59,12 +56,12 @@ class JwtAudit(GenericClass):
 
     def get_rbu(self):
         rbu = ResourceBuilder("jwt")
-        rbu.add_field('action')
+        rbu.add_field('uuid')
         rbu.add_field('creationDate')
+        rbu.add_field('action')
+        rbu.add_field('actor')
         rbu.add_field('authUser')
-        rbu.add_field('actor', extended=True)
         rbu.add_field('resource')
-        rbu.add_field('uuid', extended=True)
         rbu.add_field('type', extended=True)
         return rbu
 
