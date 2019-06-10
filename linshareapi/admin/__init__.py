@@ -36,6 +36,7 @@ from linshareapi.admin.functionalities import Functionalities
 from linshareapi.admin.threads import  Threads
 from linshareapi.admin.threadmembers import ThreadsMembers
 from linshareapi.admin.threadmembers import ThreadsMembers2
+from linshareapi.admin.shared_spaces import SharedSpaces
 from linshareapi.admin.users import Users
 from linshareapi.admin.iusers import InconsistentUsers
 from linshareapi.admin.ldapconnections import LdapConnections
@@ -119,3 +120,4 @@ class AdminCli(CoreCli):
             self.public_keys = PublicKeys(self)
         if api_version >= 2.2:
             self.jwt = Jwt(self)
+            self.shared_spaces = SharedSpaces(self)
