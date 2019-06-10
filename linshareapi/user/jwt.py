@@ -60,7 +60,7 @@ class JwtAudit(GenericClass):
         rbu.add_field('creationDate')
         rbu.add_field('action')
         rbu.add_field('actor')
-        rbu.add_field('authUser')
+        rbu.add_field('authUser', extended=True)
         rbu.add_field('resource')
         rbu.add_field('type', extended=True)
         return rbu
