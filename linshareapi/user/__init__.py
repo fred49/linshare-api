@@ -43,6 +43,7 @@ from linshareapi.user.documents import Documents2
 from linshareapi.user.rshares import ReceivedShares2
 from linshareapi.user.threads import Threads2
 from linshareapi.user.threads import Workgroup
+from linshareapi.user.shared_spaces import SharedSpaces
 from linshareapi.user.threadmembers import ThreadsMembers2
 from linshareapi.user.threadmembers import WorkgroupMembers
 from linshareapi.user.threadentries import ThreadEntries
@@ -127,3 +128,4 @@ class UserCli(CoreCli):
         if api_version >= 2.2:
             self.jwt = Jwt(self)
             self.jwt.audit = JwtAudit(self)
+            self.shared_spaces = SharedSpaces(self)
