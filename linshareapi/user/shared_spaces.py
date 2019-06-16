@@ -29,7 +29,6 @@
 from __future__ import unicode_literals
 
 from linshareapi.core import ResourceBuilder
-from linshareapi.core import LinShareException
 from linshareapi.cache import Cache as CCache
 from linshareapi.cache import Invalid as IInvalid
 from linshareapi.user.core import GenericClass
@@ -211,6 +210,43 @@ class Invalid(IInvalid):
         super(Invalid, self).__init__(CM, 'shared_spaces', **kwargs)
 
 
+class SharedSpacesAudit(GenericClass):
+    """TODO"""
+
+    local_base_url = "shared_spaces"
+    local_resource = "audit"
+
+    # cache = {
+    #     "familly": "shared_space_audit",
+    #     "whole_familly": True,
+    # }
+
+    # @SCache(arguments=True)
+    # @Cache(discriminant="audit-list", arguments=True)
+    @Time('audit-list')
+    def list(self, ss_uuid):
+        # pylint: disable=arguments-differ
+        url = "%(base)s/%(ss_uuid)s/%(resource)s" % {
+            'base': self.local_base_url,
+            'ss_uuid': ss_uuid,
+            'resource': self.local_resource
+        }
+        return self.core.list(url)
+
+    def get_rbu(self):
+        rbu = ResourceBuilder("jwt")
+        rbu.add_field('uuid')
+        rbu.add_field('creationDate')
+        rbu.add_field('type')
+        rbu.add_field('action')
+        rbu.add_field('actor')
+        rbu.add_field('authUser', extended=True)
+        rbu.add_field('workGroup', extended=True)
+        rbu.add_field('resourceUuid')
+        rbu.add_field('resource')
+        return rbu
+
+
 class SharedSpaces(GenericClass):
     """TODO"""
 
@@ -223,6 +259,7 @@ class SharedSpaces(GenericClass):
     def __init__(self, corecli):
         super(SharedSpaces, self).__init__(corecli)
         self.members = SharedSpaceMembers(corecli)
+        self.audit = SharedSpacesAudit(corecli)
 
     @Time('list')
     @Cache()
