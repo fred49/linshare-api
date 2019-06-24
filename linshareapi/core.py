@@ -786,6 +786,7 @@ class GenericClass(object):
     def __init__(self, corecli):
         self.core = corecli
         self.log = logging.getLogger('linshareapi.core.api')
+        self.last_req_time = None
 
     def get_rbu(self):
         # pylint: disable=R0201
