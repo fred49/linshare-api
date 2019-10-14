@@ -26,9 +26,9 @@
 #
 
 
-from __future__ import unicode_literals
 
-import urllib
+
+import urllib.request, urllib.parse, urllib.error
 
 from linshareapi.core import ResourceBuilder
 from linshareapi.admin.core import GenericClass
@@ -91,7 +91,7 @@ class TemplateResource(GenericClass):
         param = {}
         if domain:
             param['domain'] = domain
-        encode = urllib.urlencode(param)
+        encode = urllib.parse.urlencode(param)
         if encode:
             url += "?"
             url += encode

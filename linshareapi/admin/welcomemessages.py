@@ -25,8 +25,8 @@
 #
 
 
-from __future__ import unicode_literals
-import urllib
+
+import urllib.request, urllib.parse, urllib.error
 from linshareapi.core import ResourceBuilder
 from linshareapi.cache import Cache as CCache
 from linshareapi.cache import Invalid as IInvalid
@@ -95,7 +95,7 @@ class WelcomeMessages(GenericClass):
             param['domainId'] = domain
         if parent:
             param['parent'] = parent
-        encode = urllib.urlencode(param)
+        encode = urllib.parse.urlencode(param)
         if encode:
             url += "?"
             url += encode

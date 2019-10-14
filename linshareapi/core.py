@@ -26,7 +26,7 @@
 #
 
 
-from __future__ import unicode_literals
+
 
 import os
 import re
@@ -35,11 +35,10 @@ import logging
 import logging.handlers
 import base64
 import datetime
-import urllib2
-import cookielib
+import urllib.request, urllib.error, urllib.parse
+import http.cookiejar
 import json
-import poster
-from ordereddict import OrderedDict
+from collections import OrderedDict
 from progressbar import ProgressBar, FileTransferSpeed, Bar, ETA, Percentage
 
 
@@ -62,7 +61,7 @@ def extract_file_name(content_dispo):
     # print repr(content_dispo)
     # convertion of escape string (str type) from server
     # to unicode object
-    content_dispo = content_dispo.decode('unicode-escape').strip('"')
+    content_dispo = content_dispo.strip('"')
     file_name = ""
     for key_val in content_dispo.split(';'):
         param = key_val.strip().split('=')
@@ -72,9 +71,9 @@ def extract_file_name(content_dispo):
     return file_name
 
 
-class FileWithCallback(file):
+class FileWithCallback(object):
     def __init__(self, path, mode, callback, size=None, *args):
-        file.__init__(self, path, mode)
+        # file.__init__(self, path, mode)
         if size:
             self._total = size
         else:
@@ -160,32 +159,27 @@ class CoreCli(object):
             if self.debuglevel >= 3:
                 httpdebuglevel = 1
         # We declare all the handlers useful here.
-        auth_handler = urllib2.HTTPBasicAuthHandler()
+        auth_handler = urllib.request.HTTPBasicAuthHandler()
         # we convert unicode objects to utf8 strings because
         # the authentication module does not handle unicode
         try:
             auth_handler.add_password(
-                realm=realm.encode('utf8'),
-                uri=host.encode('utf8'),
-                user=user.encode('utf8'),
-                passwd=password.encode('utf8'))
+                realm=realm,
+                uri=host,
+                user=user,
+                passwd=password)
         except UnicodeEncodeError:
             self.log.error(
                 "the program was not able to compute "
                 + "the basic authentication token.")
         handlers = [
-            poster.streaminghttp.StreamingHTTPSHandler(
-                debuglevel=httpdebuglevel),
             auth_handler,
-            urllib2.HTTPSHandler(debuglevel=httpdebuglevel),
-            urllib2.HTTPHandler(debuglevel=httpdebuglevel),
-            poster.streaminghttp.StreamingHTTPHandler(
-                debuglevel=httpdebuglevel),
-            poster.streaminghttp.StreamingHTTPRedirectHandler(),
-            urllib2.HTTPCookieProcessor(cookielib.CookieJar())]
+            urllib.request.HTTPSHandler(debuglevel=httpdebuglevel),
+            urllib.request.HTTPHandler(debuglevel=httpdebuglevel),
+            urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar())]
         # Setting handlers
         # pylint: disable=W0142
-        urllib2.install_opener(urllib2.build_opener(*handlers))
+        urllib.request.install_opener(urllib.request.build_opener(*handlers))
 
     def get_full_url(self, url_frament):
         root_url = self.host
@@ -201,19 +195,19 @@ class CoreCli(object):
         url = self.get_full_url("authentication/authorized")
         self.log.debug("list url : " + url)
         # Building request
-        request = urllib2.Request(url)
+        request = urllib.request.Request(url)
         request.add_header('Content-Type', 'application/json; charset=UTF-8')
         request.add_header('Accept', 'application/json')
         # doRequest
         try:
-            resultq = urllib2.urlopen(request)
+            resultq = urllib.request.urlopen(request)
             code = resultq.getcode()
             if code == 200:
                 self.log.debug("auth url : ok")
                 return True
-        except urllib2.HTTPError as ex:
+        except urllib.error.HTTPError as ex:
             if not quiet:
-                msg = ex.msg.decode('unicode-escape').strip('"')
+                msg = ex.msg.strip('"')
                 if ex.code == 401:
                     self.log.error(msg + " (" + str(ex.code) + ")")
                 else:
@@ -229,7 +223,7 @@ class CoreCli(object):
     def get_json_result(self, resultq):
         json_obj = None
         result = resultq.read()
-        content_type = resultq.headers.getheader('Content-Type')
+        content_type = resultq.getheader('Content-Type')
         if content_type == "application/json":
             json_obj = json.loads(result)
             if self.debuglevel >= 2:
@@ -254,7 +248,7 @@ class CoreCli(object):
         starttime = datetime.datetime.now()
         try:
             # doRequest
-            resultq = urllib2.urlopen(request)
+            resultq = urllib.request.urlopen(request)
             code = resultq.getcode()
             self.log.debug("http return code : " + str(code))
             if code == 200:
@@ -264,10 +258,10 @@ class CoreCli(object):
                     json_obj = self.get_json_result(resultq)
             if code == 204:
                 json_obj = True
-        except urllib2.HTTPError as ex:
+        except urllib.error.HTTPError as ex:
             code = "-1"
             if self.debug >= 3:
-                print "---------- exception -----------"
+                print("---------- exception -----------")
                 sys.stderr.write(str(type(ex)))
                 sys.stderr.write("\n")
                 sys.stderr.write(str(dir(ex)))
@@ -278,11 +272,11 @@ class CoreCli(object):
                 sys.stderr.write("\n")
                 sys.stderr.write(str(ex))
                 sys.stderr.write("\n")
-                sys.stderr.write(ex.msg.decode('unicode-escape').strip('"'))
+                sys.stderr.write(ex.msg.strip('"'))
                 sys.stderr.write("\n")
                 sys.stderr.write("\n")
-                print "--------------------------------"
-            msg = ex.msg.decode('unicode-escape').strip('"')
+                print("--------------------------------")
+            msg = ex.msg.strip('"')
             msg = "Http error : " + msg + " (" + str(ex.code) + ")"
             if self.verbose:
                 self.log.info(msg)
@@ -312,7 +306,7 @@ class CoreCli(object):
         url = self.get_full_url(url)
         self.log.debug("list url : " + url)
         # Building request
-        request = urllib2.Request(url)
+        request = urllib.request.Request(url)
         request.add_header('Content-Type', 'application/json; charset=UTF-8')
         request.add_header('Accept', 'application/json')
         # Do request
@@ -327,7 +321,7 @@ class CoreCli(object):
         url = self.get_full_url(url)
         self.log.debug("get url : " + url)
         # Building request
-        request = urllib2.Request(url)
+        request = urllib.request.Request(url)
         request.add_header('Content-Type', 'application/json; charset=UTF-8')
         request.add_header('Accept', 'application/json')
         # Do request
@@ -342,13 +336,14 @@ class CoreCli(object):
         url = self.get_full_url(url)
         self.log.debug("delete url : " + url)
         # Building request
-        request = urllib2.Request(url)
+        request = urllib.request.Request(url)
         request.add_header('Accept', 'application/json')
         request.add_header('Content-Type', 'application/json; charset=UTF-8')
         if data:
             # Building request
-            post_data = json.dumps(data).encode("UTF-8")
-            request = urllib2.Request(url, post_data)
+            post_data = json.dumps(data)
+            post_data = post_data.encode('utf-8')
+            request = urllib.request.Request(url, post_data)
             request.add_header('Accept', 'application/json')
             request.add_header('Content-Type',
                                'application/json; charset=UTF-8')
@@ -363,7 +358,7 @@ class CoreCli(object):
         url = self.get_full_url(url)
         self.log.debug("options url : " + url)
         # Building request
-        request = urllib2.Request(url)
+        request = urllib.request.Request(url)
         request.add_header('Content-Type', 'application/json; charset=UTF-8')
         request.add_header('Accept', 'application/json')
         request.get_method = lambda: 'OPTIONS'
@@ -378,7 +373,7 @@ class CoreCli(object):
         url = self.get_full_url(url)
         self.log.debug("head url : " + url)
         # Building request
-        request = urllib2.Request(url)
+        request = urllib.request.Request(url)
         request.add_header('Content-Type', 'application/json; charset=UTF-8')
         request.add_header('Accept', 'application/json')
         request.get_method = lambda: 'HEAD'
@@ -388,7 +383,7 @@ class CoreCli(object):
         ret = False
         try:
             # doRequest
-            resultq = urllib2.urlopen(request)
+            resultq = urllib.request.urlopen(request)
             code = resultq.getcode()
             self.log.debug("http return code : " + str(code))
             if code == 200:
@@ -400,10 +395,10 @@ class CoreCli(object):
             self.log.debug("options url : %(url)s : request time : %(time)s",
                            {"url": url, "time": self.last_req_time})
             return ret
-        except urllib2.HTTPError as ex:
+        except urllib.error.HTTPError as ex:
             code = "-1"
             if self.debug >= 3:
-                print "---------- exception -----------"
+                print("---------- exception -----------")
                 sys.stderr.write(str(type(ex)))
                 sys.stderr.write("\n")
                 sys.stderr.write(str(dir(ex)))
@@ -414,11 +409,11 @@ class CoreCli(object):
                 sys.stderr.write("\n")
                 sys.stderr.write(str(ex))
                 sys.stderr.write("\n")
-                sys.stderr.write(ex.msg.decode('unicode-escape').strip('"'))
+                sys.stderr.write(ex.msg.strip('"'))
                 sys.stderr.write("\n")
                 sys.stderr.write("\n")
-                print "--------------------------------"
-            msg = ex.msg.decode('unicode-escape').strip('"')
+                print("--------------------------------")
+            msg = ex.msg.strip('"')
             msg = "Http error : " + msg + " (" + str(ex.code) + ")"
             if self.verbose:
                 self.log.info(msg)
@@ -442,8 +437,8 @@ class CoreCli(object):
         self.log.debug("create url : " + url)
         # Building request
         post_data = json.dumps(data)
-        post_data = post_data.encode("UTF-8")
-        request = urllib2.Request(url, post_data)
+        post_data = post_data.encode('utf-8')
+        request = urllib.request.Request(url, post_data)
         request.add_header('Content-Type', 'application/json; charset=UTF-8')
         request.add_header('Accept', 'application/json')
         # Do request
@@ -458,8 +453,9 @@ class CoreCli(object):
         url = self.get_full_url(url)
         self.log.debug("update url : " + url)
         # Building request
-        post_data = json.dumps(data).encode("UTF-8")
-        request = urllib2.Request(url, post_data)
+        post_data = json.dumps(data)
+        post_data = post_data.encode('utf-8')
+        request = urllib.request.Request(url, post_data)
         request.add_header('Content-Type', 'application/json; charset=UTF-8')
         request.add_header('Accept', 'application/json')
         request.get_method = lambda: 'PUT'
@@ -485,21 +481,26 @@ class CoreCli(object):
             msg = "The file '%(filename)s' can not be uploaded because its size is less or equal to zero." % {"filename": str(file_name)}
             raise LinShareException("-1", msg)
         pbar = None
-        stream = file(file_path, 'rb')
+        stream = open(file_path, 'rb')
+        progress_bar = False
         if progress_bar:
             widgets = [FileTransferSpeed(), ' <<<', Bar(), '>>> ',
                        Percentage(), ' ', ETA()]
             pbar = ProgressBar(widgets=widgets, maxval=file_size)
             stream = FileWithCallback(file_path, 'rb', pbar.update,
                                       file_size, file_path)
-        post = poster.encode.MultipartParam("file", filename=file_name,
-                                            fileobj=stream)
-        params = [post, ("filesize", file_size)]
-        if description:
-            params.append(("description", description))
-        datagen, headers = poster.encode.multipart_encode(params)
+        # post = poster.encode.MultipartParam("file", filename=file_name,
+        #                                     fileobj=stream)
+        # params = [post, ("filesize", file_size)]
+        # if description:
+        #     params.append(("description", description))
+        # datagen, headers = poster.encode.multipart_encode(params)
+        datagen, headers = None, {"Content-Type": "application/octet-stream"}
+        datagen, headers = None, {"Content-Type": "multipart/form-data"}
         # Building request
-        request = urllib2.Request(url, datagen, headers)
+        datagen = urllib.parse.urlencode(
+            {"file": stream}).encode()
+        request = urllib.request.Request(url, datagen, headers)
         request.add_header('Accept', 'application/json')
         request.get_method = lambda: http_method
         # request start
@@ -509,13 +510,13 @@ class CoreCli(object):
         resultq = None
         try:
             # doRequest
-            resultq = urllib2.urlopen(request)
+            resultq = urllib.request.urlopen(request)
             code = resultq.getcode()
             self.log.debug("http return code : " + str(code))
             if code == 200:
                 json_obj = self.get_json_result(resultq)
-        except urllib2.HTTPError as ex:
-            msg = ex.msg.decode('unicode-escape').strip('"')
+        except urllib.error.HTTPError as ex:
+            msg = ex.msg.strip('"')
             if self.verbose:
                 self.log.info(
                     "Http error : " + msg + " (" + str(ex.code) + ")")
@@ -564,13 +565,13 @@ class CoreCli(object):
         url = self.get_full_url(url)
         self.log.debug("download url : " + url)
         # Building request
-        request = urllib2.Request(url)
+        request = urllib.request.Request(url)
         # request.add_header('Content-Type', 'application/json; charset=UTF-8')
         request.add_header('Accept', 'application/json,*/*;charset=UTF-8')
         # request start
         starttime = datetime.datetime.now()
         # doRequest
-        resultq = urllib2.urlopen(request)
+        resultq = urllib.request.urlopen(request)
         code = resultq.getcode()
         file_name = uuid
         self.log.debug("ret code : '" + str(code) + "'")
@@ -605,6 +606,7 @@ class CoreCli(object):
                                   file_name)
             stream = None
             pbar = None
+            progress_bar = False
             if progress_bar:
                 widgets = [FileTransferSpeed(), ' <<<', Bar(), '>>> ',
                            Percentage(), ' ', ETA()]
@@ -687,7 +689,7 @@ class ResourceBuilder(object):
 
     def get_keys(self, extended=False):
         res = []
-        for field in self._fields.values():
+        for field in list(self._fields.values()):
             if field['hidden']:
                 continue
             if not field['extended']:
@@ -699,14 +701,14 @@ class ResourceBuilder(object):
     def get_fields(self, extended=False, full=False):
         res = []
         if extended:
-            for field in self._fields.values():
+            for field in list(self._fields.values()):
                 if field['extended']:
                     res.append(field['field'])
         elif full:
-            for field in self._fields.keys():
+            for field in list(self._fields.keys()):
                 res.append(field)
         else:
-            for field in self._fields.values():
+            for field in list(self._fields.values()):
                 if not field['extended']:
                     res.append(field['field'])
         return res
@@ -730,23 +732,23 @@ class ResourceBuilder(object):
 
     def to_resource(self):
         ret = {}
-        for field in self._fields.values():
+        for field in list(self._fields.values()):
             ret[field['field']] = field['value']
         return ret
 
     def load_from_args(self, namespace):
-        for field in self._fields.values():
+        for field in list(self._fields.values()):
             self.log.debug("config: %s", field)
             value = getattr(namespace, field['arg'], None)
             if value is not None:
-                if field.has_key('hook'):
+                if 'hook' in field:
                     value = field['hook'](value, self)
                 field['value'] = value
 
     def copy(self, data):
         if isinstance(data, dict):
             self.log.debug("dict")
-            for field, val in self._fields.items():
+            for field, val in list(self._fields.items()):
                 self.log.debug("field: %s", field)
                 self.log.debug("config: %s", val)
                 value = data.get(field, None)
@@ -755,7 +757,7 @@ class ResourceBuilder(object):
                     val['value'] = value
         elif isinstance(data, ResourceBuilder):
             self.log.debug("rbu")
-            for field, val in self._fields.items():
+            for field, val in list(self._fields.items()):
                 self.log.debug("field: %s", field)
                 self.log.debug("config: %s", val)
                 value = data[field]['value']
@@ -769,7 +771,7 @@ class ResourceBuilder(object):
         return json.dumps(self.to_resource(), sort_keys=True, indent=2)
 
     def check_required_fields(self):
-        for field in self._fields.values():
+        for field in list(self._fields.values()):
             if field['required']:
                 value = field['value']
                 if value is None:

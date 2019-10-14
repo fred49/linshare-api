@@ -26,7 +26,7 @@
 #
 
 
-from __future__ import unicode_literals
+
 
 from linshareapi.core import GenericClass as GGenericClass
 from linshareapi.cache import CacheManager

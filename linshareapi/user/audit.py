@@ -26,9 +26,9 @@
 #
 
 
-from __future__ import unicode_literals
 
-import urllib
+
+import urllib.request, urllib.parse, urllib.error
 
 from linshareapi.core import ResourceBuilder
 from linshareapi.cache import Cache as CCache
@@ -90,7 +90,7 @@ class Audit(GenericClass):
             param['beginDate'] = begin_date
         if end_date:
             param['endDate'] = end_date
-        encode = urllib.urlencode(param, doseq=True)
+        encode = urllib.parse.urlencode(param, doseq=True)
         if encode:
             url += "?"
             url += encode

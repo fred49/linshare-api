@@ -25,9 +25,9 @@
 #
 
 
-from __future__ import unicode_literals
 
-import urllib
+
+import urllib.request, urllib.parse, urllib.error
 from linshareapi.core import ResourceBuilder
 from linshareapi.cache import Cache as CCache
 from linshareapi.cache import Invalid as IInvalid
@@ -184,7 +184,7 @@ class UpgradeTasks(GenericClass):
         param = {}
         if force:
             param['force'] = force
-        encode = urllib.urlencode(param)
+        encode = urllib.parse.urlencode(param)
         if encode:
             url += "?"
             url += encode

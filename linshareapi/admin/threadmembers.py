@@ -26,7 +26,7 @@
 #
 
 
-from __future__ import unicode_literals
+
 
 from linshareapi.core import ResourceBuilder
 from linshareapi.cache import Cache as CCache

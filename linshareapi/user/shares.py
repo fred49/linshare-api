@@ -25,9 +25,9 @@
 #
 
 
-from __future__ import unicode_literals
 
-import urllib2
+
+import urllib.request, urllib.error, urllib.parse
 import datetime
 
 from linshareapi.core import ResourceBuilder
@@ -69,16 +69,16 @@ class Shares(GenericClass):
             "shares/sharedocument/%s/%s" % (mail, uuid))
         self.log.debug("share url : " + url)
         # Building request
-        request = urllib2.Request(url)
+        request = urllib.request.Request(url)
         # request start
         starttime = datetime.datetime.now()
         try:
             # doRequest
-            resultq = urllib2.urlopen(request)
-        except urllib2.HTTPError as ex:
-            print ex
-            print ex.code
-            print url
+            resultq = urllib.request.urlopen(request)
+        except urllib.error.HTTPError as ex:
+            print(ex)
+            print(ex.code)
+            print(url)
             raise ex
         # request end
         endtime = datetime.datetime.now()

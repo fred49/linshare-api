@@ -26,9 +26,9 @@
 #
 
 
-from __future__ import unicode_literals
 
-import urllib
+
+import urllib.request, urllib.parse, urllib.error
 
 from linshareapi.core import ResourceBuilder
 from linshareapi.core import LinShareException
@@ -57,7 +57,7 @@ class Jwt(GenericClass):
         param = {}
         if domain:
             param['domainUuid'] = domain
-        encode = urllib.urlencode(param)
+        encode = urllib.parse.urlencode(param)
         if encode:
             url += "?"
             url += encode
@@ -83,7 +83,7 @@ class Jwt(GenericClass):
             param = {
                 'domainUuid': domain_uuid
             }
-            encode = urllib.urlencode(param)
+            encode = urllib.parse.urlencode(param)
             if encode:
                 url += "?"
                 url += encode

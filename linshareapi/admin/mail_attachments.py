@@ -26,10 +26,10 @@
 #
 
 
-from __future__ import unicode_literals
 
-import urllib2
-import urllib
+
+import urllib.request, urllib.error, urllib.parse
+import urllib.request, urllib.parse, urllib.error
 import os
 import datetime
 import poster
@@ -69,7 +69,7 @@ class MailAttachments(GenericClass):
         )
         param = {}
         param['configUuid'] = config_uuid
-        encode = urllib.urlencode(param)
+        encode = urllib.parse.urlencode(param)
         if encode:
             url += "?"
             url += encode
@@ -102,7 +102,7 @@ class MailAttachments(GenericClass):
             post,
             ("filesize", file_size),
         ]
-        for field, value in mp_params.items():
+        for field, value in list(mp_params.items()):
             if value is not None:
                 if field == "mailConfig":
                     params.append(("mail_config", value))
@@ -110,7 +110,7 @@ class MailAttachments(GenericClass):
                     params.append((field, value))
         datagen, headers = poster.encode.multipart_encode(params)
         # Building request
-        request = urllib2.Request(url, datagen, headers)
+        request = urllib.request.Request(url, datagen, headers)
         request.add_header('Accept', 'application/json')
         request.get_method = lambda: 'POST'
         # request start
@@ -118,12 +118,12 @@ class MailAttachments(GenericClass):
         resultq = None
         try:
             # doRequest
-            resultq = urllib2.urlopen(request)
+            resultq = urllib.request.urlopen(request)
             code = resultq.getcode()
             self.log.debug("http return code : " + str(code))
             if code == 200:
                 json_obj = self.core.get_json_result(resultq)
-        except urllib2.HTTPError as ex:
+        except urllib.error.HTTPError as ex:
             msg = ex.msg.decode('unicode-escape').strip('"')
             if self.core.verbose:
                 self.log.info(

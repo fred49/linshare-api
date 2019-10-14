@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """TODO"""
 
-from __future__ import unicode_literals
+
 import os
 import time
 import json
@@ -11,28 +11,28 @@ import datetime
 import hashlib
 import tempfile
 from functools import wraps
-from ordereddict import OrderedDict
+from collections import OrderedDict
 
 # pylint: disable=missing-docstring
 
 def compute_key(cli, familly, discriminant=None):
     """This function is used to compute a unique key from all connection parametters."""
     hash_key = hashlib.sha256()
-    hash_key.update(familly)
-    hash_key.update(cli.host)
-    hash_key.update(cli.user)
-    hash_key.update(cli.password)
+    hash_key.update(familly.encode('utf-8'))
+    hash_key.update(cli.host.encode('utf-8'))
+    hash_key.update(cli.user.encode('utf-8'))
+    hash_key.update(cli.password.encode('utf-8'))
     if discriminant:
         if isinstance(discriminant, list):
             for i in discriminant:
                 if i is not None and i is not False:
-                    hash_key.update(str(i))
+                    hash_key.update(str(i).encode('utf-8'))
         elif isinstance(discriminant, tuple):
             for i in discriminant:
                 if i is not None and i is not False:
-                    hash_key.update(str(i))
+                    hash_key.update(str(i).encode('utf-8'))
         else:
-            hash_key.update(discriminant)
+            hash_key.update(discriminant.encode('utf-8'))
     hash_key = hash_key.hexdigest()
     cli.log.debug("hash_key: " + hash_key)
     return hash_key
@@ -68,7 +68,7 @@ class Cache(object):
             """TODO"""
             resourceapi = args[0]
             cache_cfg = resourceapi.cache
-            if cache_cfg.has_key('familly'):
+            if 'familly' in cache_cfg:
                 self.familly = cache_cfg['familly']
             if self.familly is None:
                 raise Exception("Invalid familly value for Cache decorator.")
@@ -119,9 +119,9 @@ class Invalid(object):
         override the current default configuration."""
         resourceapi = args[0]
         cache_cfg = resourceapi.cache
-        if cache_cfg.has_key('familly'):
+        if 'familly' in cache_cfg:
             self.familly = cache_cfg['familly']
-        if cache_cfg.has_key('whole_familly'):
+        if 'whole_familly' in cache_cfg:
             self.whole_familly = cache_cfg['whole_familly']
         if self.familly is None:
             raise Exception("Invalid familly value for Cache decorator.")
@@ -261,7 +261,7 @@ class Time(object):
             if info is None:
                 info = getattr(resourceapi, "verbose", False)
             if info:
-                print self.label % {'time': diff}
+                print(self.label % {'time': diff})
             if self.return_time:
                 return (diff, res)
             return res

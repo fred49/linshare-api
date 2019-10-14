@@ -25,7 +25,7 @@
 #
 
 
-from __future__ import unicode_literals
+
 
 from linshareapi.core import LinShareException
 from linshareapi.core import ResourceBuilder
@@ -35,7 +35,7 @@ from linshareapi.user.core import GenericClass
 from linshareapi.user.core import Time as CTime
 from linshareapi.user.core import CM
 
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
 # pylint: disable=C0111
 # Missing docstring
@@ -143,7 +143,7 @@ class WorkgroupContent(ThreadEntries):
         param = {}
         if tree:
             param['tree'] = True
-        encode = urllib.urlencode(param)
+        encode = urllib.parse.urlencode(param)
         if encode:
             url += "?"
             url += encode
@@ -176,7 +176,7 @@ class WorkgroupContent(ThreadEntries):
         param = []
         if parent:
             # I use only the last folder uuid, the first ones are not really useful
-            if isinstance(parent, (list,)):
+            if isinstance(parent, list):
                 if len(parent) >= 1:
                     parent = parent[-1]
             param.append(("parent", parent))
@@ -185,7 +185,7 @@ class WorkgroupContent(ThreadEntries):
         if node_types:
             for node_type in node_types:
                 param.append(("type", node_type))
-        encode = urllib.urlencode(param)
+        encode = urllib.parse.urlencode(param)
         if encode:
             url += "?"
             url += encode
@@ -203,11 +203,11 @@ class WorkgroupContent(ThreadEntries):
         param = {}
         if parent:
             # I use only the last folder uuid, the first ones are not really useful
-            if isinstance(parent, (list,)):
+            if isinstance(parent, list):
                 if len(parent) >= 1:
                     parent = parent[-1]
             param['parent'] = parent
-        encode = urllib.urlencode(param)
+        encode = urllib.parse.urlencode(param)
         if encode:
             url += "?"
             url += encode
