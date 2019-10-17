@@ -135,6 +135,10 @@ class Documents2(Documents):
         """ Get one document."""
         return self.core.get("documents/%s" % uuid)
 
+    def head(self, uuid):
+        """ Get one document."""
+        return self.core.head("documents/%s" % uuid)
+
     @Time('update')
     @Invalid()
     def update(self, data):
