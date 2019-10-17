@@ -28,17 +28,16 @@
 
 
 
-import urllib.request, urllib.error, urllib.parse
-import urllib.request, urllib.parse, urllib.error
 import os
 import datetime
-import poster
 
 from linshareapi.core import ResourceBuilder
 from linshareapi.core import LinShareException
 from linshareapi.admin.core import GenericClass
 from linshareapi.admin.core import Time
 from linshareapi.admin.core import Cache
+from requests_toolbelt import MultipartEncoder
+
 
 
 class MailAttachments(GenericClass):
@@ -76,85 +75,37 @@ class MailAttachments(GenericClass):
         return self.core.list(url)
 
     @Time('create')
-    def create(self, file_path, mp_params, file_name=None):
+    def create(self, file_path, data, file_name=None):
         self.last_req_time = None
         url = "{base}".format(
             base=self.local_base_url
         )
         url = self.core.get_full_url(url)
-        self.log.debug("upload url : " + url)
+        self.log.debug("upload url : %s", url)
         # Generating datas and headers
         file_size = os.path.getsize(file_path)
-        self.log.debug("file_path is : " + file_path)
+        self.log.debug("file_path is : %s", file_path)
         if not file_name:
             file_name = os.path.basename(file_path)
-        self.log.debug("file_name is : " + file_name)
+        self.log.debug("file_name is : %s", file_name)
         if file_size <= 0:
             msg = "The file '%(filename)s' can not be uploaded because its size is less or equal to zero." % {"filename": str(file_name)}
             raise LinShareException("-1", msg)
-        stream = file(file_path, 'rb')
-        post = poster.encode.MultipartParam(
-            "file",
-            filename=file_name,
-            fileobj=stream
-        )
-        params = [
-            post,
-            ("filesize", file_size),
-        ]
-        for field, value in list(mp_params.items()):
-            if value is not None:
-                if field == "mailConfig":
-                    params.append(("mail_config", value))
-                else:
-                    params.append((field, value))
-        datagen, headers = poster.encode.multipart_encode(params)
-        # Building request
-        request = urllib.request.Request(url, datagen, headers)
-        request.add_header('Accept', 'application/json')
-        request.get_method = lambda: 'POST'
-        # request start
-        starttime = datetime.datetime.now()
-        resultq = None
-        try:
-            # doRequest
-            resultq = urllib.request.urlopen(request)
-            code = resultq.getcode()
-            self.log.debug("http return code : " + str(code))
-            if code == 200:
-                json_obj = self.core.get_json_result(resultq)
-        except urllib.error.HTTPError as ex:
-            msg = ex.msg.decode('unicode-escape').strip('"')
-            if self.core.verbose:
-                self.log.info(
-                    "Http error : " + msg + " (" + str(ex.code) + ")")
-            else:
-                self.log.debug(
-                    "Http error : " + msg + " (" + str(ex.code) + ")")
-            json_obj = self.core.get_json_result(ex)
-            code = json_obj.get('errCode')
-            msg = json_obj.get('message')
-            self.log.debug("Server error code : " + str(code))
-            self.log.debug("Server error message : " + str(msg))
-            # request end
+        with open(file_path, 'rb') as file_stream:
+            fields = {
+                'filesize': str(file_size),
+                'file': (file_name, file_stream),
+            }
+            for field, value in data.itemp():
+                if value is not None:
+                    if field == "mailConfig":
+                        fields["mail_config"] = value
+                    else:
+                        fields[field] = value
+            encoder = MultipartEncoder(fields=fields)
+            self.core.session.headers.update({'Content-Type': encoder.content_type})
+            starttime = datetime.datetime.now()
+            request = self.core.session.post(url, data=encoder)
             endtime = datetime.datetime.now()
             self.last_req_time = str(endtime - starttime)
-            self.log.debug(
-                "Can not upload file %(filename)s (%(filepath)s)",
-                {
-                    "filename": file_name,
-                    "filepath": file_path
-                }
-            )
-            raise LinShareException(code, msg)
-        # request end
-        endtime = datetime.datetime.now()
-        self.last_req_time = str(endtime - starttime)
-        self.log.debug(
-            "upload url : %(url)s : request time : %(time)s",
-            {
-                "url": url,
-                "time": self.last_req_time
-            }
-        )
-        return json_obj
+            return self.core.process_request(request, url)

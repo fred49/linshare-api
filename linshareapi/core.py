@@ -30,16 +30,17 @@
 
 import os
 import re
-import sys
+import json
 import logging
 import logging.handlers
-import base64
 import datetime
-import urllib.request, urllib.error, urllib.parse
-import http.cookiejar
-import json
 from collections import OrderedDict
+import requests
+from requests.auth import HTTPBasicAuth
+from requests_toolbelt.utils import dump
+from requests_toolbelt import (MultipartEncoder, MultipartEncoderMonitor)
 from progressbar import ProgressBar, FileTransferSpeed, Bar, ETA, Percentage
+
 
 
 # pylint: disable=missing-docstring
@@ -57,10 +58,6 @@ class LinShareException(Exception):
 
 def extract_file_name(content_dispo):
     """Extract file name from the input request body"""
-    # print type(content_dispo)
-    # print repr(content_dispo)
-    # convertion of escape string (str type) from server
-    # to unicode object
     content_dispo = content_dispo.strip('"')
     file_name = ""
     for key_val in content_dispo.split(';'):
@@ -71,39 +68,22 @@ def extract_file_name(content_dispo):
     return file_name
 
 
-class FileWithCallback(object):
-    def __init__(self, path, mode, callback, size=None, *args):
-        # file.__init__(self, path, mode)
-        if size:
-            self._total = size
-        else:
-            self.seek(0, os.SEEK_END)
-            self._total = self.tell()
-        self.seek(0)
-        self._callback = callback
-        self._args = args
-        self._seen = 0.0
-
-    def __len__(self):
-        return self._total
-
-    def read(self, size):
-        data = file.read(self, size)
-        self._seen += size
-        if self._seen > self._total:
-            self._callback(self._total)
-        else:
-            self._callback(self._seen)
-        return data
-
-    def write(self, data):
-        if data:
-            self._seen += len(data)
-        if self._seen > self._total:
-            self._callback(self._total)
-        else:
-            self._callback(self._seen)
-        data = file.write(self, data)
+def create_callback(encoder):
+    """TODO"""
+    encoder_len = encoder.len
+    widgets = [
+        FileTransferSpeed(),
+        ' <<<',
+        Bar(),
+        '>>> ',
+        Percentage(),
+        ' ',
+        ETA()
+    ]
+    progress = ProgressBar(widgets=widgets, maxval=encoder_len)
+    def callback(monitor):
+        progress.update(monitor.bytes_read)
+    return callback
 
 
 class ApiNotImplementedYet(object):
@@ -122,20 +102,19 @@ class ApiNotImplementedYet(object):
 
 class CoreCli(object):
 
-    # pylint: disable=R0902
     def __init__(self, host, user, password, verbose=False, debug=0,
                  realm="Name Of Your LinShare Realm"):
         classname = str(self.__class__.__name__.lower())
         self.log = logging.getLogger('linshareapi.' + classname)
         self.verbose = verbose
         self.debug = debug
-        self.password = password
         self.host = host
         self.user = user
         self.last_req_time = None
         self.cache_time = 60
         self.nocache = False
         self.base_url = ""
+        verify = False
         if not host:
             raise ValueError("invalid host : host url is not set !")
         if not user:
@@ -144,42 +123,15 @@ class CoreCli(object):
             raise ValueError("invalid password : password is not set ! ")
         if not realm:
             realm = "Name Of Your LinShare Realm"
-        self.debuglevel = 0
-        # 0 : debug off
-        # 1 : debug on
-        # 2 : debug on, request result is printed (pretty json)
-        # 3 : debug on, urllib debug on,  http headers and request are printed
-        httpdebuglevel = 0
-        if self.debug:
-            try:
-                self.debuglevel = int(self.debug)
-            except ValueError:
-                self.debuglevel = 1
-
-            if self.debuglevel >= 3:
-                httpdebuglevel = 1
-        # We declare all the handlers useful here.
-        auth_handler = urllib.request.HTTPBasicAuthHandler()
-        # we convert unicode objects to utf8 strings because
-        # the authentication module does not handle unicode
-        try:
-            auth_handler.add_password(
-                realm=realm,
-                uri=host,
-                user=user,
-                passwd=password)
-        except UnicodeEncodeError:
-            self.log.error(
-                "the program was not able to compute "
-                + "the basic authentication token.")
-        handlers = [
-            auth_handler,
-            urllib.request.HTTPSHandler(debuglevel=httpdebuglevel),
-            urllib.request.HTTPHandler(debuglevel=httpdebuglevel),
-            urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar())]
-        # Setting handlers
-        # pylint: disable=W0142
-        urllib.request.install_opener(urllib.request.build_opener(*handlers))
+        self.session = requests.Session()
+        self.session.headers.update(
+            {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json; charset=UTF-8',
+            }
+        )
+        self.session.auth = HTTPBasicAuth(user, password)
+        self.session.verify = verify
 
     def get_full_url(self, url_frament):
         root_url = self.host
@@ -193,368 +145,149 @@ class CoreCli(object):
 
     def auth(self, quiet=False):
         url = self.get_full_url("authentication/authorized")
-        self.log.debug("list url : " + url)
-        # Building request
-        request = urllib.request.Request(url)
-        request.add_header('Content-Type', 'application/json; charset=UTF-8')
-        request.add_header('Accept', 'application/json')
-        # doRequest
-        try:
-            resultq = urllib.request.urlopen(request)
-            code = resultq.getcode()
-            if code == 200:
-                self.log.debug("auth url : ok")
-                return True
-        except urllib.error.HTTPError as ex:
-            if not quiet:
-                msg = ex.msg.strip('"')
-                if ex.code == 401:
-                    self.log.error(msg + " (" + str(ex.code) + ")")
-                else:
-                    self.log.error(msg + " (" + str(ex.code) + ")")
+        self.log.debug("list url : %s", url)
+        request = self.session.get(url)
+        self.log.debug("request: %s", request)
+        if request:
+            self.log.debug("auth url : ok")
+            return True
+        if not quiet:
+            if request.status_code == 401:
+                self.log.error("Authentication failed: %s: %s", request.status_code, request.text)
         return False
 
-    def add_auth_header(self, request):
-        base64string = base64.encodestring('%s:%s' % (
-            self.user, self.password)).replace('\n', '')
-        request.add_header("Authorization", "Basic %s" % base64string)
-        # request.add_header("Cookie", "JSESSIONID=")
-
-    def get_json_result(self, resultq):
-        json_obj = None
-        result = resultq.read()
-        content_type = resultq.getheader('Content-Type')
-        if content_type == "application/json":
-            json_obj = json.loads(result)
-            if self.debuglevel >= 2:
-                self.log.debug("the result is : ")
-                self.log.debug(json.dumps(json_obj, sort_keys=True, indent=2))
+    def process_request(self, request, url, force_nocontent=False):
+        """TODO"""
+        self.log.debug("url : %s", url)
+        self.log.debug("request: %s", request)
+        self.log.debug("request.text: %s", request.text)
+        self.log.debug(
+            "list url : %(url)s : request time : %(time)s",
+            {
+                "url": url,
+                "time": self.last_req_time
+            }
+        )
+        if request:
+            if request.status_code == 204:
+                return True
+            if force_nocontent:
+                return request.text
+            return request.json()
         else:
-            self.log.error("Payload size : " + str(len(result)))
-            self.log.debug(str(result))
-            msg = "Wrong content type in the http response : "
-            if content_type:
-                msg += content_type
-            self.log.error("Server error code : " + str(resultq.code))
-            self.log.error("Server error message : " + str(result))
-            self.log.error(msg)
-            raise ValueError(msg)
-        return json_obj
-
-    def do_request(self, request, force_nocontent=False):
-        # request start
-        self.last_req_time = None
-        json_obj = None
-        starttime = datetime.datetime.now()
-        try:
-            # doRequest
-            resultq = urllib.request.urlopen(request)
-            code = resultq.getcode()
-            self.log.debug("http return code : " + str(code))
-            if code == 200:
-                if force_nocontent:
-                    json_obj = resultq
-                else:
-                    json_obj = self.get_json_result(resultq)
-            if code == 204:
-                json_obj = True
-        except urllib.error.HTTPError as ex:
             code = "-1"
-            if self.debug >= 3:
-                print("---------- exception -----------")
-                sys.stderr.write(str(type(ex)))
-                sys.stderr.write("\n")
-                sys.stderr.write(str(dir(ex)))
-                sys.stderr.write("\n")
-                sys.stderr.write(str(ex.headers))
-                sys.stderr.write("\n")
-                sys.stderr.write(str(type(ex.msg)))
-                sys.stderr.write("\n")
-                sys.stderr.write(str(ex))
-                sys.stderr.write("\n")
-                sys.stderr.write(ex.msg.strip('"'))
-                sys.stderr.write("\n")
-                sys.stderr.write("\n")
-                print("--------------------------------")
-            msg = ex.msg.strip('"')
-            msg = "Http error : " + msg + " (" + str(ex.code) + ")"
-            if self.verbose:
-                self.log.info(msg)
-            else:
-                self.log.debug(msg)
-            if ex.code == 400 or ex.code == 403 or ex.code == 404:
-                json_obj = self.get_json_result(ex)
+            msg = request.text
+            self.log.debug("headers: %s", request.headers)
+            if not force_nocontent and request.status_code in [400, 403, 404]:
+                json_obj = request.json()
                 code = json_obj.get('errCode')
                 msg = json_obj.get('message')
-                self.log.debug("Server error code : " + str(code))
-                self.log.debug("Server error message : " + str(msg))
-            else:
-                if self.debug >= 3:
-                    sys.stderr.write("payload : " + ex.read())
-                    sys.stderr.write("\n")
-            # request end
-            endtime = datetime.datetime.now()
-            self.last_req_time = str(endtime - starttime)
+            self.log.debug("Server error code: %s", code)
+            self.log.debug("Server error message: %s", msg)
             raise LinShareException(code, msg)
-        # request end
-        endtime = datetime.datetime.now()
-        self.last_req_time = str(endtime - starttime)
-        return json_obj
 
     def list(self, url):
         """ List ressources store into LinShare."""
         url = self.get_full_url(url)
-        self.log.debug("list url : " + url)
-        # Building request
-        request = urllib.request.Request(url)
-        request.add_header('Content-Type', 'application/json; charset=UTF-8')
-        request.add_header('Accept', 'application/json')
-        # Do request
-        ret = self.do_request(request)
-        self.log.debug("""list url : %(url)s : request time : %(time)s""",
-                       {"url": url,
-                        "time": self.last_req_time})
-        return ret
+        starttime = datetime.datetime.now()
+        request = self.session.get(url)
+        endtime = datetime.datetime.now()
+        self.last_req_time = str(endtime - starttime)
+        return self.process_request(request, url)
 
     def get(self, url):
-        """ List ressources store into LinShare."""
-        url = self.get_full_url(url)
-        self.log.debug("get url : " + url)
-        # Building request
-        request = urllib.request.Request(url)
-        request.add_header('Content-Type', 'application/json; charset=UTF-8')
-        request.add_header('Accept', 'application/json')
-        # Do request
-        ret = self.do_request(request)
-        self.log.debug("""get url : %(url)s : request time : %(time)s""",
-                       {"url": url,
-                        "time": self.last_req_time})
-        return ret
+        """Get a ressource store into LinShare."""
+        return self.list(url)
 
     def delete(self, url, data=None):
-        """Delete one ressource store into LinShare."""
+        """Delete a ressource store into LinShare."""
         url = self.get_full_url(url)
-        self.log.debug("delete url : " + url)
-        # Building request
-        request = urllib.request.Request(url)
-        request.add_header('Accept', 'application/json')
-        request.add_header('Content-Type', 'application/json; charset=UTF-8')
+        starttime = datetime.datetime.now()
+        query = {"url": url}
         if data:
-            # Building request
-            post_data = json.dumps(data)
-            post_data = post_data.encode('utf-8')
-            request = urllib.request.Request(url, post_data)
-            request.add_header('Accept', 'application/json')
-            request.add_header('Content-Type',
-                               'application/json; charset=UTF-8')
-        request.get_method = lambda: 'DELETE'
-        ret = self.do_request(request)
-        self.log.debug("""delete url : %(url)s : request time : %(time)s""",
-                       {"url": url,
-                        "time": self.last_req_time})
-        return ret
+            self.log.debug("using payload for deleting the current object : %s", data)
+            # post_data = json.dumps(data)
+            # post_data = post_data.encode('utf-8')
+            query["data"] = json.dumps(data)
+        request = self.session.delete(**query)
+        endtime = datetime.datetime.now()
+        self.last_req_time = str(endtime - starttime)
+        return self.process_request(request, url)
 
     def options(self, url):
+        """TODO"""
         url = self.get_full_url(url)
-        self.log.debug("options url : " + url)
-        # Building request
-        request = urllib.request.Request(url)
-        request.add_header('Content-Type', 'application/json; charset=UTF-8')
-        request.add_header('Accept', 'application/json')
-        request.get_method = lambda: 'OPTIONS'
-        # Do request
-        ret = self.do_request(request)
-        self.log.debug("""options url : %(url)s : request time : %(time)s""",
-                       {"url": url,
-                        "time": self.last_req_time})
-        return ret
-
-    def head(self, url, **kwargs):
-        url = self.get_full_url(url)
-        self.log.debug("head url : " + url)
-        # Building request
-        request = urllib.request.Request(url)
-        request.add_header('Content-Type', 'application/json; charset=UTF-8')
-        request.add_header('Accept', 'application/json')
-        request.get_method = lambda: 'HEAD'
-        # Do request
-        self.last_req_time = None
         starttime = datetime.datetime.now()
-        ret = False
+        request = self.session.options(url)
+        endtime = datetime.datetime.now()
+        self.last_req_time = str(endtime - starttime)
+        return self.process_request(request, url)
+
+    def head(self, url):
+        """TODO"""
+        url = self.get_full_url(url)
+        starttime = datetime.datetime.now()
+        request = self.session.head(url)
+        endtime = datetime.datetime.now()
+        self.last_req_time = str(endtime - starttime)
         try:
-            # doRequest
-            resultq = urllib.request.urlopen(request)
-            code = resultq.getcode()
-            self.log.debug("http return code : " + str(code))
-            if code == 200:
-                ret = True
-            if code == 204:
-                ret = True
-            endtime = datetime.datetime.now()
-            self.last_req_time = str(endtime - starttime)
-            self.log.debug("options url : %(url)s : request time : %(time)s",
-                           {"url": url, "time": self.last_req_time})
-            return ret
-        except urllib.error.HTTPError as ex:
-            code = "-1"
-            if self.debug >= 3:
-                print("---------- exception -----------")
-                sys.stderr.write(str(type(ex)))
-                sys.stderr.write("\n")
-                sys.stderr.write(str(dir(ex)))
-                sys.stderr.write("\n")
-                sys.stderr.write(str(ex.headers))
-                sys.stderr.write("\n")
-                sys.stderr.write(str(type(ex.msg)))
-                sys.stderr.write("\n")
-                sys.stderr.write(str(ex))
-                sys.stderr.write("\n")
-                sys.stderr.write(ex.msg.strip('"'))
-                sys.stderr.write("\n")
-                sys.stderr.write("\n")
-                print("--------------------------------")
-            msg = ex.msg.strip('"')
-            msg = "Http error : " + msg + " (" + str(ex.code) + ")"
-            if self.verbose:
-                self.log.info(msg)
-            else:
-                self.log.debug(msg)
-            if self.debug >= 3:
-                sys.stderr.write("payload : " + ex.read())
-                sys.stderr.write("\n")
-            # request end
-            endtime = datetime.datetime.now()
-            self.last_req_time = str(endtime - starttime)
-            self.log.debug("options url : %(url)s : request time : %(time)s",
-                           {"url": url, "time": self.last_req_time})
-            if ex.code != 404:
-                raise LinShareException(code, msg)
-        return ret
+            return self.process_request(request, url, force_nocontent=True)
+        except LinShareException:
+            return False
 
     def create(self, url, data):
-        """ create ressources store into LinShare."""
+        """Create a ressource store into LinShare."""
         url = self.get_full_url(url)
-        self.log.debug("create url : " + url)
-        # Building request
-        post_data = json.dumps(data)
-        post_data = post_data.encode('utf-8')
-        request = urllib.request.Request(url, post_data)
-        request.add_header('Content-Type', 'application/json; charset=UTF-8')
-        request.add_header('Accept', 'application/json')
-        # Do request
-        ret = self.do_request(request)
-        self.log.debug("""post url : %(url)s : request time : %(time)s""",
-                       {"url": url,
-                        "time": self.last_req_time})
-        return ret
+        starttime = datetime.datetime.now()
+        request = self.session.post(url, data=json.dumps(data))
+        endtime = datetime.datetime.now()
+        self.last_req_time = str(endtime - starttime)
+        return self.process_request(request, url)
 
     def update(self, url, data):
-        """ update ressources store into LinShare."""
+        """Create a ressource store into LinShare."""
         url = self.get_full_url(url)
-        self.log.debug("update url : " + url)
-        # Building request
-        post_data = json.dumps(data)
-        post_data = post_data.encode('utf-8')
-        request = urllib.request.Request(url, post_data)
-        request.add_header('Content-Type', 'application/json; charset=UTF-8')
-        request.add_header('Accept', 'application/json')
-        request.get_method = lambda: 'PUT'
-        # Do request
-        ret = self.do_request(request)
-        self.log.debug("""put url : %(url)s : request time : %(time)s""",
-                       {"url": url,
-                        "time": self.last_req_time})
-        return ret
+        starttime = datetime.datetime.now()
+        request = self.session.put(url, data=json.dumps(data))
+        endtime = datetime.datetime.now()
+        self.last_req_time = str(endtime - starttime)
+        return self.process_request(request, url)
 
     def upload(self, file_path, url, description=None, file_name=None,
-               progress_bar=True, http_method='POST'):
-        self.last_req_time = None
+               progress_bar=True, **kwargs):
+        self.log.debug("kwargs is : %s", kwargs)
         url = self.get_full_url(url)
-        self.log.debug("upload url : " + url)
-        # Generating datas and headers
         file_size = os.path.getsize(file_path)
-        self.log.debug("file_path is : " + file_path)
+        self.log.debug("file_size is : %s", file_size)
         if not file_name:
             file_name = os.path.basename(file_path)
-        self.log.debug("file_name is : " + file_name)
+        self.log.debug("file_name is : %s", file_name)
         if file_size <= 0:
-            msg = "The file '%(filename)s' can not be uploaded because its size is less or equal to zero." % {"filename": str(file_name)}
+            msg = (
+                "The file '{filename}' can not be uploaded"
+                "because its size is less or equal to zero."
+            )
+            msg.format({"filename": file_name})
             raise LinShareException("-1", msg)
-        pbar = None
-        stream = open(file_path, 'rb')
-        progress_bar = False
-        if progress_bar:
-            widgets = [FileTransferSpeed(), ' <<<', Bar(), '>>> ',
-                       Percentage(), ' ', ETA()]
-            pbar = ProgressBar(widgets=widgets, maxval=file_size)
-            stream = FileWithCallback(file_path, 'rb', pbar.update,
-                                      file_size, file_path)
-        # post = poster.encode.MultipartParam("file", filename=file_name,
-        #                                     fileobj=stream)
-        # params = [post, ("filesize", file_size)]
-        # if description:
-        #     params.append(("description", description))
-        # datagen, headers = poster.encode.multipart_encode(params)
-        datagen, headers = None, {"Content-Type": "application/octet-stream"}
-        datagen, headers = None, {"Content-Type": "multipart/form-data"}
-        # Building request
-        datagen = urllib.parse.urlencode(
-            {"file": stream}).encode()
-        request = urllib.request.Request(url, datagen, headers)
-        request.add_header('Accept', 'application/json')
-        request.get_method = lambda: http_method
-        # request start
-        if pbar:
-            pbar.start()
-        starttime = datetime.datetime.now()
-        resultq = None
-        try:
-            # doRequest
-            resultq = urllib.request.urlopen(request)
-            code = resultq.getcode()
-            self.log.debug("http return code : " + str(code))
-            if code == 200:
-                json_obj = self.get_json_result(resultq)
-        except urllib.error.HTTPError as ex:
-            msg = ex.msg.strip('"')
-            if self.verbose:
-                self.log.info(
-                    "Http error : " + msg + " (" + str(ex.code) + ")")
+        with open(file_path, 'rb') as file_stream:
+            fields = {
+                'filesize': str(file_size),
+                'file': (file_name, file_stream)
+            }
+            if description:
+                fields["description"] = description
+
+            if progress_bar:
+                multi = MultipartEncoder(fields=fields)
+                encoder = MultipartEncoderMonitor(multi, create_callback(multi))
             else:
-                self.log.debug(
-                    "Http error : " + msg + " (" + str(ex.code) + ")")
-            json_obj = self.get_json_result(ex)
-            code = json_obj.get('errCode')
-            msg = json_obj.get('message')
-            self.log.debug("Server error code : " + str(code))
-            self.log.debug("Server error message : " + str(msg))
-            # request end
+                encoder = MultipartEncoder(fields=fields)
+            self.session.headers.update({'Content-Type': encoder.content_type})
+            starttime = datetime.datetime.now()
+            request = self.session.post(url, data=encoder)
             endtime = datetime.datetime.now()
-            if pbar:
-                pbar.finish()
             self.last_req_time = str(endtime - starttime)
-            if ex.code == 502:
-                self.log.warn(
-                    """The file '%(filename)s' was uploaded
-                    (%(time)ss) but the proxy cut the connexion. No server
-                    acknowledge was received.""",
-                    {"filename": file_name,
-                     "time": self.last_req_time})
-            else:
-                self.log.debug(
-                    "Can not upload file %(filename)s (%(filepath)s)",
-                    {"filename": file_name,
-                     "filepath": file_path})
-            raise LinShareException(code, msg)
-        # request end
-        endtime = datetime.datetime.now()
-        if pbar:
-            pbar.finish()
-        self.last_req_time = str(endtime - starttime)
-        self.log.debug("upload url : %(url)s : request time : %(time)s",
-                       {"url": url,
-                        "time": self.last_req_time})
-        return json_obj
+            return self.process_request(request, url)
 
     def download(self, uuid, url, forced_file_name=None,
                  progress_bar=True, chunk_size=256,
@@ -563,74 +296,81 @@ class CoreCli(object):
         This method could throw exceptions like urllib2.HTTPError."""
         self.last_req_time = None
         url = self.get_full_url(url)
-        self.log.debug("download url : " + url)
-        # Building request
-        request = urllib.request.Request(url)
-        # request.add_header('Content-Type', 'application/json; charset=UTF-8')
-        request.add_header('Accept', 'application/json,*/*;charset=UTF-8')
-        # request start
+        self.log.debug("download url : %s", url)
         starttime = datetime.datetime.now()
-        # doRequest
-        resultq = urllib.request.urlopen(request)
-        code = resultq.getcode()
+        request = self.session.get(url, stream=True)
         file_name = uuid
-        self.log.debug("ret code : '" + str(code) + "'")
-        if code == 200:
-            content_lenth = resultq.info().getheader('Content-Length')
-            if not content_lenth:
-                msg = "No content lengh header found !"
-                self.log.debug(msg)
-                progress_bar = False
+        self.log.debug("url : %s", url)
+        self.log.debug("request: %s", request)
+        if not request:
+            code = "-1"
+            msg = request.text
+            self.log.debug("headers: %s", request.headers)
+            if request.status_code in [400, 403, 404]:
+                json_obj = request.json()
+                code = json_obj.get('errCode')
+                msg = json_obj.get('message')
+            self.log.debug("Server error code: %s", code)
+            self.log.debug("Server error message: %s", msg)
+            raise LinShareException(code, msg)
+        content_type = request.headers.get('Content-Type')
+        self.log.debug("Content-Type: %s", content_type)
+        content_length = request.headers.get('Content-Length')
+        self.log.debug("Content-Length: %s", content_length)
+        content_dispo = request.headers.get('Content-Disposition')
+        self.log.debug("Content-Disposition: %s", content_dispo)
+        self.log.debug("Content-Transfer-Encoding: %s",
+                       request.headers.get("Content-Transfer-Encoding"))
+        if not content_length:
+            self.log.error("Content-Length header missing. download aborted.")
+        file_size = int(content_length.strip())
+        if forced_file_name:
+            file_name = forced_file_name
+        else:
+            if content_dispo:
+                content_dispo = content_dispo.strip()
+                file_name = extract_file_name(content_dispo)
+        if directory:
+            if os.path.isdir(directory):
+                file_name = directory + "/" + file_name
+        self.log.debug("file_name: %s", file_name)
+        if os.path.isfile(file_name):
+            if not overwrite:
+                cpt = 1
+                while 1:
+                    if not os.path.isfile(file_name + "." + str(cpt)):
+                        file_name += "." + str(cpt)
+                        break
+                    cpt += 1
             else:
-                file_size = int(content_lenth.strip())
-            if forced_file_name:
-                file_name = forced_file_name
-            else:
-                content_dispo = resultq.info().getheader('Content-disposition')
-                if content_dispo:
-                    content_dispo = content_dispo.strip()
-                    file_name = extract_file_name(content_dispo)
-            if directory:
-                if os.path.isdir(directory):
-                    file_name = directory + "/" + file_name
-            if os.path.isfile(file_name):
-                if not overwrite:
-                    cpt = 1
-                    while 1:
-                        if not os.path.isfile(file_name + "." + str(cpt)):
-                            file_name += "." + str(cpt)
-                            break
-                        cpt += 1
-                else:
-                    self.log.warn("'%s' already exists. It was overwriten.",
-                                  file_name)
-            stream = None
-            pbar = None
-            progress_bar = False
-            if progress_bar:
-                widgets = [FileTransferSpeed(), ' <<<', Bar(), '>>> ',
-                           Percentage(), ' ', ETA()]
-                pbar = ProgressBar(widgets=widgets, maxval=file_size)
-                stream = FileWithCallback(file_name, 'w', pbar.update,
-                                          file_size, file_name)
-                pbar.start()
-            else:
-                stream = file(file_name, 'w')
-            while 1:
-                chunk = resultq.read(chunk_size)
-                if not chunk:
-                    break
-                stream.write(chunk)
-            stream.flush()
-            stream.close()
-            if pbar:
-                pbar.finish()
-        # request end
+                self.log.warn("'%s' already exists. It was overwriten.",
+                              file_name)
+        widgets = [
+            FileTransferSpeed(),
+            ' <<<',
+            Bar(),
+            '>>> ',
+            Percentage(),
+            ' ',
+            ETA()
+        ]
+        with ProgressBar(widgets=widgets, maxval=file_size) as progress:
+            with open(file_name, 'wb') as file_stream:
+                bytes_read = 0
+                for line in request.iter_content(chunk_size=chunk_size):
+                    if line:
+                        bytes_read += len(line)
+                        progress.update(bytes_read)
+                        file_stream.write(line)
         endtime = datetime.datetime.now()
         self.last_req_time = str(endtime - starttime)
-        self.log.debug("download url : %(url)s : request time : %(time)s",
-                       {"url": url,
-                        "time": self.last_req_time})
+        self.log.debug(
+            "download url : %(url)s : request time : %(time)s",
+            {
+                "url": url,
+                "time": self.last_req_time
+            }
+        )
         return (file_name, self.last_req_time)
 
 

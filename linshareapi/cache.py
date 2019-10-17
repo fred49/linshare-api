@@ -21,7 +21,6 @@ def compute_key(cli, familly, discriminant=None):
     hash_key.update(familly.encode('utf-8'))
     hash_key.update(cli.host.encode('utf-8'))
     hash_key.update(cli.user.encode('utf-8'))
-    hash_key.update(cli.password.encode('utf-8'))
     if discriminant:
         if isinstance(discriminant, list):
             for i in discriminant:
