@@ -76,9 +76,8 @@ setup(
     # List run-time dependencies here.  These will be installed by pip when your
     # project is installed.
     install_requires=[
+        'progressbar2',
+        'requests',
+        'requests-toolbelt'
     ]
-    #    'poster',
-    #                    'progressbar',
-    ##                    'OrderedDict',
-    #                    ],
 )
