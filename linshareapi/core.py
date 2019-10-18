@@ -175,15 +175,22 @@ class CoreCli(object):
                 return request.text
             return request.json()
         else:
-            code = "-1"
+            code = request.status_code
             msg = request.text
             self.log.debug("headers: %s", request.headers)
+            content_type = request.headers.get('Content-Type')
+            self.log.debug("Content-Type: %s", content_type)
+            content_length = request.headers.get('Content-Length')
+            self.log.debug("Content-Length: %s", content_length)
+            content_dispo = request.headers.get('Content-Disposition')
+            self.log.debug("Content-Disposition: %s", content_dispo)
             if not force_nocontent and request.status_code in [400, 403, 404]:
-                json_obj = request.json()
-                code = json_obj.get('errCode')
-                msg = json_obj.get('message')
-            self.log.debug("Server error code: %s", code)
-            self.log.debug("Server error message: %s", msg)
+                if content_type == 'application/json':
+                    json_obj = request.json()
+                    code = json_obj.get('errCode')
+                    msg = json_obj.get('message')
+                self.log.debug("Server error code: %s", code)
+                self.log.debug("Server error message: %s", msg)
             raise LinShareException(code, msg)
 
     def list(self, url):
