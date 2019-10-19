@@ -51,7 +51,7 @@ class Cache(object):
            familly          -- each kind of resource must have its own kind of familly.
            discriminant     -- how to store different data in the same familly.
                                it will be used to compute a different cache key.
-           arguments        -- add all the arguments (query params) of the
+           arguments        -- Flag: add all the arguments (query params) of the
                                current function as discriminant for cache key
            cache_duration   -- Time to live for the cache.
         """
@@ -172,7 +172,7 @@ class CacheManager(object):
         res = "/".join(res)
         if not os.path.isdir(res):
             os.makedirs(res)
-        self.log.debug("cachedir :" + str(res))
+        self.log.debug("cachedir : %s", str(res))
         return res
 
     def _get_cachefile(self, key, group=None):
@@ -187,9 +187,12 @@ class CacheManager(object):
     def has_key(self, key, group=None, cache_duration=None):
         if self._has_key(key, group):
             cachefile = self._get_cachefile(key, group)
+            file_size = os.stat(cachefile).st_size
+            if file_size == 0:
+                return False
             file_time = os.stat(cachefile).st_mtime
             form = "{da:%Y-%m-%d %H:%M:%S}"
-            self.log.debug("cached data : " + str(
+            self.log.debug("cached data : %s", str(
                 form.format(da=datetime.datetime.fromtimestamp(file_time))))
             if not cache_duration:
                 cache_duration = self.cache_duration
@@ -236,7 +239,9 @@ class CacheManager(object):
         self.log.debug("caching data : %s : %s", group, key)
         cachefile = self._get_cachefile(key, group)
         with open(cachefile, 'wb') as fde:
-            json.dump(data, fde)
+            # json.dump(data, fde)
+            data = json.dumps(data)
+            fde.write(data.encode('utf-8'))
 
 
 class Time(object):
