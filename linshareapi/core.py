@@ -39,7 +39,7 @@ import requests
 from requests.auth import HTTPBasicAuth
 from requests_toolbelt.utils import dump
 from requests_toolbelt import (MultipartEncoder, MultipartEncoderMonitor)
-from progressbar import ProgressBar, FileTransferSpeed, Bar, ETA, Percentage
+from progressbar import ProgressBar, FileTransferSpeed, Bar, ETA, Percentage, DataSize
 
 
 
@@ -68,22 +68,26 @@ def extract_file_name(content_dispo):
     return file_name
 
 
-def create_callback(encoder):
-    """TODO"""
-    encoder_len = encoder.len
+def get_default_widgets():
     widgets = [
         FileTransferSpeed(),
         ' <<<',
         Bar(),
         '>>> ',
         Percentage(),
-        ' ',
+        ' - ',
+        DataSize(),
+        ' - ',
         ETA()
     ]
-    progress = ProgressBar(widgets=widgets, maxval=encoder_len)
+
+def create_callback(encoder):
+    """TODO"""
+    encoder_len = encoder.len
+    progress = ProgressBar(widgets=get_default_widgets(), maxval=encoder_len)
     def callback(monitor):
         progress.update(monitor.bytes_read)
-    return callback
+    return callback, progress
 
 
 class ApiNotImplementedYet(object):
@@ -101,9 +105,10 @@ class ApiNotImplementedYet(object):
 
 
 class CoreCli(object):
+    # pylint: disable=too-many-instance-attributes
 
     def __init__(self, host, user, password, verbose=False, debug=0,
-                 realm="Name Of Your LinShare Realm"):
+                 realm="Name Of Your LinShare Realm", verify=True):
         classname = str(self.__class__.__name__.lower())
         self.log = logging.getLogger('linshareapi.' + classname)
         self.verbose = verbose
@@ -114,7 +119,6 @@ class CoreCli(object):
         self.cache_time = 60
         self.nocache = False
         self.base_url = ""
-        verify = False
         if not host:
             raise ValueError("invalid host : host url is not set !")
         if not user:
@@ -286,12 +290,15 @@ class CoreCli(object):
 
             if progress_bar:
                 multi = MultipartEncoder(fields=fields)
-                encoder = MultipartEncoderMonitor(multi, create_callback(multi))
+                callback, progress_bar = create_callback(multi)
+                encoder = MultipartEncoderMonitor(multi, callback)
             else:
                 encoder = MultipartEncoder(fields=fields)
             self.session.headers.update({'Content-Type': encoder.content_type})
             starttime = datetime.datetime.now()
             request = self.session.post(url, data=encoder)
+            if progress_bar:
+                progress_bar.finish()
             endtime = datetime.datetime.now()
             self.last_req_time = str(endtime - starttime)
             return self.process_request(request, url)
@@ -352,16 +359,7 @@ class CoreCli(object):
             else:
                 self.log.warn("'%s' already exists. It was overwriten.",
                               file_name)
-        widgets = [
-            FileTransferSpeed(),
-            ' <<<',
-            Bar(),
-            '>>> ',
-            Percentage(),
-            ' ',
-            ETA()
-        ]
-        with ProgressBar(widgets=widgets, maxval=file_size) as progress:
+        with ProgressBar(widgets=get_default_widgets(), maxval=file_size) as progress:
             with open(file_name, 'wb') as file_stream:
                 bytes_read = 0
                 for line in request.iter_content(chunk_size=chunk_size):
