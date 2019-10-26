@@ -65,10 +65,10 @@ class UserCli(CoreCli):
     VERSION = 2.2
     VERSIONS = [0, 1, 2, 2.2]
 
-    def __init__(self, host, user, password, verbose, debug, api_version=None):
+    def __init__(self, host, user, password, verbose, debug, api_version=None, verify=True):
         # pylint: disable=too-many-arguments
         # pylint: disable=too-many-statements
-        super(UserCli, self).__init__(host, user, password, verbose, debug)
+        super(UserCli, self).__init__(host, user, password, verbose, debug, verify=verify)
         if api_version is None:
             api_version = self.VERSION
         if api_version not in self.VERSIONS:
