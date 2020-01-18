@@ -365,7 +365,8 @@ class CoreCli(object):
                 for line in request.iter_content(chunk_size=chunk_size):
                     if line:
                         bytes_read += len(line)
-                        progress.update(bytes_read)
+                        if progress_bar:
+                            progress.update(bytes_read)
                         file_stream.write(line)
         endtime = datetime.datetime.now()
         self.last_req_time = str(endtime - starttime)
