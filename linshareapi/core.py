@@ -294,9 +294,11 @@ class CoreCli(object):
                 encoder = MultipartEncoderMonitor(multi, callback)
             else:
                 encoder = MultipartEncoder(fields=fields)
-            self.session.headers.update({'Content-Type': encoder.content_type})
             starttime = datetime.datetime.now()
-            request = self.session.post(url, data=encoder)
+            request = self.session.post(
+                url,
+                headers={'Content-Type': encoder.content_type},
+                data=encoder)
             if progress_bar:
                 progress_bar.finish()
             endtime = datetime.datetime.now()
