@@ -404,7 +404,7 @@ class ResourceBuilder(object):
             field['hook'] = hook
 
     def add_field(self, field, arg=None, value=None, extended=False,
-                  hidden=False, e_type=str, required=None):
+                  hidden=False, e_type=str, required=None, not_empty=False):
         """Add a new field to the current ResourceBuilder.
 
            Keyword arguments:
@@ -418,6 +418,8 @@ class ResourceBuilder(object):
            e_type   -- field data type (default str): int, float, str
            required -- True if the current field is required for create
                        and update methods
+           not_empty -- True if the current field is required and it is not
+                       an empty string
         """
         if required is None:
             required = self._required
@@ -429,6 +431,7 @@ class ResourceBuilder(object):
             'value': value,
             'extended': extended,
             'required': required,
+            'not_empty': not_empty,
             'e_type': e_type,
             'hidden': hidden
         }
@@ -520,6 +523,12 @@ class ResourceBuilder(object):
         for field in list(self._fields.values()):
             if field['required']:
                 value = field['value']
+                if field['not_empty']:
+                    self.log.debug("not_empty flag enabled for '%s'.",
+                                   field['field'])
+                    if not value:
+                        raise ValueError(
+                            "missing value for required field (empty) : " + field['field'])
                 if value is None:
                     raise ValueError("missing value for required field : "
                                      + field['field'])

@@ -277,7 +277,7 @@ class WorkgroupFolders(WorkgroupContent):
     def get_rbu(self):
         rbu = ResourceBuilder("folders")
         rbu.add_field('uuid')
-        rbu.add_field('name', required=True)
+        rbu.add_field('name', required=True, not_empty=True)
         rbu.add_field('type', value="FOLDER", required=True)
         rbu.add_field('nodeType', value="FOLDER", required=True)
         rbu.add_field('creationDate')
