@@ -156,10 +156,12 @@ class Invalid(object):
 
 
 class CacheManager(object):
-    def __init__(self, cache_duration=60,
+    def __init__(self, cache_duration=60, name=None,
                  logger_name="linshareapi.cachemanager"):
         self.log = logging.getLogger(logger_name)
-        self.rootcachedir = tempfile.gettempdir() + "/" + "linshare-cache"
+        self.rootcachedir = os.path.expanduser("~") + "/.cache/linshare"
+        if name:
+            self.rootcachedir += name
         if not os.path.isdir(self.rootcachedir):
             os.makedirs(self.rootcachedir)
         self.urls = OrderedDict()

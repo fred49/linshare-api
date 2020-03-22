@@ -39,7 +39,7 @@ from linshareapi.cache import Invalid as IInvalid
 # pylint: disable=missing-docstring
 # pylint: disable=too-few-public-methods
 
-CM = CacheManager()
+CM = CacheManager(name="admcli")
 
 class Time(CTime):
     def __init__(self, suffix, **kwargs):
