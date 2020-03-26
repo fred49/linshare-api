@@ -29,6 +29,7 @@ from linshareapi.core import CoreCli
 from linshareapi.core import ApiNotImplementedYet as ANIY
 from linshareapi.core import GenericClass
 from linshareapi.user.users import Users
+from linshareapi.user.autocomplete import Autocomplete
 from linshareapi.user.rshares import ReceivedShares
 from linshareapi.user.shares import Shares
 from linshareapi.user.threads import Threads
@@ -81,6 +82,7 @@ class UserCli(CoreCli):
         self.threads = ANIY(self, api_version, "threads")
         self.thread_members = ANIY(self, api_version, "thread_members")
         self.users = ANIY(self, api_version, "users")
+        self.autocomplete = ANIY(self, api_version, "autocomplete")
         self.contactslists = ANIY(self, api_version, "contactslists")
         self.contactslistscontacts = ANIY(self, api_version,
                                           "contactslistscontacts")
@@ -97,11 +99,13 @@ class UserCli(CoreCli):
             self.threads = Threads(self)
             self.thread_members = ThreadsMembers(self)
             self.users = Users(self)
+            self.autocomplete = Autocomplete(self)
             self.contactslists = ContactsList(self)
             self.contactslistscontacts = ContactsListContact(self)
         elif api_version == 1:
             self.base_url = "linshare/webservice/rest/user"
             self.users = Users2(self)
+            self.autocomplete = Autocomplete(self)
             self.documents = Documents2(self)
             self.rshares = ReceivedShares2(self)
             self.threads = Threads2(self)
@@ -114,6 +118,7 @@ class UserCli(CoreCli):
         elif api_version >= 2:
             self.base_url = "linshare/webservice/rest/user/v2"
             self.users = Users2(self)
+            self.autocomplete = Autocomplete(self)
             self.documents = Documents2(self)
             self.rshares = ReceivedShares2(self)
             self.threads = Workgroup(self)
