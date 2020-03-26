@@ -139,7 +139,7 @@ class DomainPatterns2(DomainPatterns):
         return res
 
     @Time('get')
-    @Cache()
+    @Cache(arguments=True)
     def get(self, uuid):
         """ Get one document."""
         return self.core.get("domain_patterns/%s" % uuid)

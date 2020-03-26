@@ -155,7 +155,7 @@ class WorkgroupMembers(ThreadsMembers2):
     local_base_url = "work_groups"
 
     @Time('get')
-    @Cache()
+    @Cache(arguments=True)
     def get(self, wg_uuid, uuid):
         """ Get one workgroup member."""
         url = "%(base)s/%(wg_uuid)s/members/%(uuid)s" % {

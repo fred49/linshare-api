@@ -65,10 +65,11 @@ class Invalid(IInvalid):
 class Domains(GenericClass):
 
     @Time('get')
+    @Cache(arguments=True)
     def get(self, identifier):
         """ Get one domain."""
         # return self.core.get("domains/" + identifier)
-        domains = (v for v in self.list() if v.get('identifier') == identifier)
+        domains = (v for v in self.core.list("domains") if v.get('identifier') == identifier)
         for i in domains:
             self.log.debug(i)
             return i

@@ -60,9 +60,10 @@ class Invalid(IInvalid):
 class LdapConnections(GenericClass):
 
     @Time('get')
+    @Cache(arguments=True)
     def get(self, identifier):
         """ Get one document store into LinShare."""
-        documents = (v for v in self.list() if v.get('identifier') == identifier)
+        documents = (v for v in self.core.list("ldap_connections") if v.get('identifier') == identifier)
         for i in documents:
             self.log.debug(i)
             return i
@@ -112,7 +113,7 @@ class LdapConnections(GenericClass):
 class LdapConnections2(LdapConnections):
 
     @Time('get')
-    @Cache()
+    @Cache(arguments=True)
     def get(self, uuid):
         return self.core.get("ldap_connections/%s" % uuid)
 
