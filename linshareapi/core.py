@@ -519,7 +519,10 @@ class ResourceBuilder(object):
             raise ValueError("Invalid input data")
 
     def __str__(self):
-        return json.dumps(self.to_resource(), sort_keys=True, indent=2)
+        res = []
+        res.append("[" + self._name + "]")
+        res.append(json.dumps(self.to_resource(), sort_keys=True, indent=2))
+        return "\n".join(res)
 
     def check_required_fields(self):
         for field in list(self._fields.values()):
