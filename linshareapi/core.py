@@ -429,8 +429,8 @@ class ResourceBuilder(object):
             arg = re.sub('(?!^)([A-Z]+)', r'_\1', field).lower()
         self._fields[field] = {
             'field': field,
-            'arg': arg,
             'value': value,
+            'arg': arg,
             'extended': extended,
             'required': required,
             'not_empty': not_empty,
@@ -520,9 +520,10 @@ class ResourceBuilder(object):
 
     def __str__(self):
         res = []
-        res.append("[" + self._name + "]")
-        res.append(json.dumps(self.to_resource(), sort_keys=True, indent=2))
-        return "\n".join(res)
+        res.append("[" + self._name + "] {")
+        for field in self._fields.values():
+            res.append("  " + str(field))
+        return "\n".join(res) + "\n}"
 
     def check_required_fields(self):
         for field in list(self._fields.values()):
