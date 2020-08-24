@@ -368,7 +368,14 @@ class CoreCli(object):
                     if line:
                         bytes_read += len(line)
                         if progress_bar:
-                            progress.update(bytes_read)
+                            if bytes_read > file_size:
+                                # it may happen when content is text data and
+                                # reverse proxies compressed it.
+                                self.log.debug(
+                                    "bytes_read greater than content length: %s/%s",
+                                    bytes_read, file_size)
+                            else:
+                                progress.update(bytes_read)
                         file_stream.write(line)
         endtime = datetime.datetime.now()
         self.last_req_time = str(endtime - starttime)
