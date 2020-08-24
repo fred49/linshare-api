@@ -37,6 +37,7 @@ from linshareapi.core import LinShareException
 from linshareapi.admin.core import GenericClass
 from linshareapi.admin.core import Time
 from linshareapi.admin.core import Cache
+from linshareapi.admin.core import Invalid
 from requests_toolbelt import MultipartEncoder
 
 
@@ -61,7 +62,7 @@ class MailAttachments(GenericClass):
         return rbu
 
     @Time('list')
-    @Cache(discriminant=True)
+    # @Cache(discriminant=False, arguments=True)
     def list(self, config_uuid):
         # pylint: disable=arguments-differ
         url = "{base}".format(
@@ -76,6 +77,7 @@ class MailAttachments(GenericClass):
         return self.core.list(url)
 
     @Time('create')
+    # @Invalid(whole_familly=True)
     def create(self, file_path, data, file_name=None):
         self.last_req_time = None
         url = "{base}".format(
