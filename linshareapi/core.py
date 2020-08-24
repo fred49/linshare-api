@@ -46,6 +46,7 @@ from progressbar import ProgressBar, FileTransferSpeed, Bar, ETA, Percentage, Da
 # pylint: disable=missing-docstring
 # pylint: disable=too-few-public-methods
 
+LOG = logging.getLogger('linshareapi.core')
 
 class LinShareException(Exception):
     pass
@@ -81,6 +82,7 @@ def get_default_widgets():
         ETA()
     ]
 
+
 def create_callback(encoder):
     """TODO"""
     encoder_len = encoder.len
@@ -89,6 +91,19 @@ def create_callback(encoder):
         progress.update(monitor.bytes_read)
     return callback, progress
 
+
+def trace_session(session):
+    for header in session.headers.items():
+        LOG.debug("session.header: %s", header)
+    for cookie in session.cookies.items():
+        LOG.debug("session.cookie: %s", cookie)
+
+
+def trace_request(request):
+    for header in request.headers.items():
+        LOG.debug("request.header: %s", header)
+    for cookie in request.cookies.items():
+        LOG.debug("request.cookie: %s", cookie)
 
 class ApiNotImplementedYet(object):
 
@@ -164,6 +179,8 @@ class CoreCli(object):
         """TODO"""
         self.log.debug("url : %s", url)
         self.log.debug("request: %s", request)
+        trace_session(self.session)
+        trace_request(request)
         self.log.debug("request.text: %s", request.text)
         self.log.debug(
             "list url : %(url)s : request time : %(time)s",
@@ -301,6 +318,8 @@ class CoreCli(object):
                 data=encoder)
             if progress_bar:
                 progress_bar.finish()
+            trace_session(self.session)
+            trace_request(request)
             endtime = datetime.datetime.now()
             self.last_req_time = str(endtime - starttime)
             return self.process_request(request, url)
@@ -318,6 +337,8 @@ class CoreCli(object):
         file_name = uuid
         self.log.debug("url : %s", url)
         self.log.debug("request: %s", request)
+        trace_session(self.session)
+        trace_request(request)
         if not request:
             code = "-1"
             msg = request.text
