@@ -99,12 +99,13 @@ class MailAttachments(GenericClass):
                 'filesize': str(file_size),
                 'file': (file_name, file_stream),
             }
-            for field, value in data.itemp():
+            for field, value in data.items():
                 if value is not None:
                     if field == "mailConfig":
-                        fields["mail_config"] = value
+                        fields["mail_config"] = str(value)
                     else:
-                        fields[field] = value
+                        fields[field] = str(value)
+            self.log.debug("fields: %s", fields)
             encoder = MultipartEncoder(fields=fields)
             self.core.session.headers.update({'Content-Type': encoder.content_type})
             starttime = datetime.datetime.now()
