@@ -105,6 +105,8 @@ class MailAttachments(GenericClass):
                         fields["mail_config"] = str(value)
                     else:
                         fields[field] = str(value)
+            if fields.get('language'):
+                fields["enableForAll"] = str(False)
             self.log.debug("fields: %s", fields)
             encoder = MultipartEncoder(fields=fields)
             self.core.session.headers.update({'Content-Type': encoder.content_type})
