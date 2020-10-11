@@ -61,8 +61,10 @@ class AdminCli(CoreCli):
 
     # pylint: disable=too-many-arguments
     # pylint: disable=too-many-statements
-    def __init__(self, host, user, password, verbose, debug, api_version=None, verify=True):
-        super(AdminCli, self).__init__(host, user, password, verbose, debug, verify=verify)
+    def __init__(self, host, user, password, verbose, debug, api_version=None,
+                 verify=True, auth_type="plain"):
+        super(AdminCli, self).__init__(host, user, password, verbose, debug,
+                                       verify=verify, auth_type=auth_type)
         self.log.debug("api_version : %s", api_version)
         if api_version is None:
             api_version = self.VERSION

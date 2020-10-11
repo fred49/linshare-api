@@ -36,6 +36,7 @@ import logging.handlers
 import datetime
 from collections import OrderedDict
 import requests
+from requests.auth import AuthBase
 from requests.auth import HTTPBasicAuth
 from requests_toolbelt.utils import dump
 from requests_toolbelt import (MultipartEncoder, MultipartEncoderMonitor)
@@ -119,11 +120,28 @@ class ApiNotImplementedYet(object):
                 'version': self.version})
 
 
+class HTTPJwtAuth(AuthBase):
+    """TODO"""
+
+    def __init__(self, token):
+        self.token = token
+
+    def __eq__(self, other):
+        return self.token == getattr(other, 'token', None)
+
+    def __ne__(self, other):
+        return not self == other
+
+    def __call__(self, r):
+        r.headers['Authorization'] = "Bearer " + self.token
+        return r
+
 class CoreCli(object):
     # pylint: disable=too-many-instance-attributes
 
     def __init__(self, host, user, password, verbose=False, debug=0,
-                 realm="Name Of Your LinShare Realm", verify=True):
+                 realm="Name Of Your LinShare Realm", verify=True,
+                 auth_type="plain"):
         classname = str(self.__class__.__name__.lower())
         self.log = logging.getLogger('linshareapi.' + classname)
         self.verbose = verbose
@@ -149,7 +167,12 @@ class CoreCli(object):
                 'Content-Type': 'application/json; charset=UTF-8',
             }
         )
-        self.session.auth = HTTPBasicAuth(user, password)
+        if auth_type == "plain":
+            self.session.auth = HTTPBasicAuth(user, password)
+        elif auth_type == "jwt":
+            self.session.auth = HTTPJwtAuth(password)
+        else:
+            raise ValueError("Invalid auth_type value: " + auth_type)
         self.session.verify = verify
 
     def get_full_url(self, url_frament):
