@@ -195,7 +195,11 @@ class CoreCli(object):
             return True
         if not quiet:
             if request.status_code == 401:
-                self.log.error("Authentication failed: %s: %s", request.status_code, request.text)
+                self.log.debug("Authentication failed: %s: %s", request.status_code, request.text)
+                trace_request(request)
+                error_code = request.headers.get('X-Linshare-Auth-Error-Code')
+                error_msg = request.headers.get('X-Linshare-Auth-Error-Msg')
+                self.log.error("Authentication failed: error code=%s: %s", error_code, error_msg)
         return False
 
     def process_request(self, request, url, force_nocontent=False):
