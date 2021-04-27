@@ -49,6 +49,7 @@ from linshareapi.admin.jwt import Jwt
 from linshareapi.admin.authentication import Authentication
 from linshareapi.admin.mail_configs import MailConfigs
 from linshareapi.admin.mail_attachments import MailAttachments
+from linshareapi.admin.mail_activations import MailActivations
 
 
 class AdminCli(CoreCli):
@@ -109,6 +110,7 @@ class AdminCli(CoreCli):
             self.welcome_messages = WelcomeMessages(self)
             self.funcs = Functionalities(self)
             self.domain_policies = DomainPolicies(self)
+            self.mail_activations = MailActivations(self)
         elif api_version >= 2:
             self.threads = Threads(self)
             self.thread_members = ThreadsMembers2(self)
@@ -122,6 +124,7 @@ class AdminCli(CoreCli):
             self.upgrade_tasks = UpgradeTasks(self)
             self.welcome_messages = WelcomeMessages(self)
             self.public_keys = PublicKeys(self)
+            self.mail_activations = MailActivations(self)
         if api_version >= 2.2:
             self.jwt = Jwt(self)
             self.shared_spaces = SharedSpaces(self)
