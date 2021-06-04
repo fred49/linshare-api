@@ -193,12 +193,15 @@ class CoreCli(object):
         if request:
             self.log.debug("auth url : ok")
             return True
-        if not quiet:
-            if request.status_code == 401:
-                self.log.debug("Authentication failed: %s: %s", request.status_code, request.text)
-                trace_request(request)
-                error_code = request.headers.get('X-Linshare-Auth-Error-Code')
-                error_msg = request.headers.get('X-Linshare-Auth-Error-Msg')
+        if request.status_code == 401:
+            self.log.debug("Authentication failed: %s: %s", request.status_code, request.text)
+            trace_request(request)
+            error_code = request.headers.get('X-Linshare-Auth-Error-Code')
+            error_msg = request.headers.get('X-Linshare-Auth-Error-Msg')
+            self.log.debug("X-Linshare-Auth-Error-Code: %s: Msg: %s", error_code, error_msg)
+            if error_code == '1004':
+                raise LinShareException(error_code, error_msg)
+            if not quiet:
                 self.log.error("Authentication failed: error code=%s: %s", error_code, error_msg)
         return False
 
