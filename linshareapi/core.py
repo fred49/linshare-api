@@ -35,7 +35,8 @@ import logging
 import logging.handlers
 import datetime
 from collections import OrderedDict
-import requests
+from http.client import HTTPConnection
+from requests import Session
 from requests.auth import AuthBase
 from requests.auth import HTTPBasicAuth
 from requests_toolbelt.utils import dump
@@ -146,6 +147,8 @@ class CoreCli(object):
         self.log = logging.getLogger('linshareapi.' + classname)
         self.verbose = verbose
         self.debug = debug
+        if debug >= 3:
+            HTTPConnection.debuglevel = 2
         self.host = host
         self.user = user
         self.last_req_time = None
@@ -160,7 +163,7 @@ class CoreCli(object):
             raise ValueError("invalid password : password is not set ! ")
         if not realm:
             realm = "Name Of Your LinShare Realm"
-        self.session = requests.Session()
+        self.session = Session()
         self.session.headers.update(
             {
                 'Accept': 'application/json',
