@@ -97,10 +97,21 @@ class MailActivations(GenericClass):
 
     @Time('reset')
     @Invalid()
-    def reset(self, data):
+    def reset(self, mail_activation_id, domain_id):
         """TODO"""
-        self.debug(data)
-        return self.core.delete("mail_activations", data)
+        self.log.debug("mail_activation_id: %s", mail_activation_id)
+        self.log.debug("domain_id: %s", domain_id)
+        if not mail_activation_id:
+            raise ValueError("Missing mail_activation_id")
+        if not domain_id:
+            raise ValueError("Missing domain_id")
+        data = {
+            'identifier': mail_activation_id,
+            'domain': domain_id
+        }
+        self.core.delete("mail_activations", data)
+        return self.get(mail_activation_id, domain_id=domain_id)
+
 
     def options_policies(self):
         """TODO"""
