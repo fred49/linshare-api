@@ -89,9 +89,21 @@ class Functionalities(GenericClass):
 
     @Time('reset')
     @Invalid()
-    def reset(self, data):
-        self.debug(data)
-        return self.core.delete("functionalities", data)
+    def reset(self, func_id, domain_id):
+        """TODO"""
+        self.log.debug("func_id: %s", func_id)
+        self.log.debug("domain_id: %s", domain_id)
+        if not func_id:
+            raise ValueError("Missing func_id")
+        if not domain_id:
+            raise ValueError("Missing domain_id")
+        data = {
+            'identifier': func_id,
+            'domain': domain_id
+        }
+        self.core.delete("functionalities", data)
+        return self.get(func_id, domain_id=domain_id)
+
 
     def options_policies(self):
         return self.core.options("enums/policies")
