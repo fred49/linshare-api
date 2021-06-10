@@ -98,13 +98,17 @@ class Shares2(Shares):
     def get_rbu(self):
         rbu = ResourceBuilder("shares")
         rbu.add_field('secured', e_type=bool)
+        rbu.add_field('enableUSDA', e_type=bool, arg='enable_USDA')
+        rbu.add_field('forceAnonymousSharing', e_type=bool)
+        rbu.add_field('creationAcknowledgement', e_type=bool, arg='sharing_acknowledgement')
         rbu.add_field('expirationDate')
         rbu.add_field('subject')
         rbu.add_field('message')
         # [document uuids,]
         rbu.add_field('documents', required=True)
         # [GenericUserDto,]
-        rbu.add_field('recipients',required=True)
+        rbu.add_field('recipients', required=True)
+        rbu.add_field('mailingListUuid', arg='contact_list')
         return rbu
 
     def get_rbu_user(self):
