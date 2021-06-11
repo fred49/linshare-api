@@ -53,6 +53,7 @@ from linshareapi.user.threadentries import WorkgroupFolders
 from linshareapi.user.users import Users2
 from linshareapi.user.guests import Guests
 from linshareapi.user.shares import Shares2
+from linshareapi.user.shares import Shares3
 from linshareapi.user.jwt import Jwt
 from linshareapi.user.jwt import JwtAudit
 from linshareapi.user.authentication import Authentication
@@ -139,3 +140,4 @@ class UserCli(CoreCli):
             self.jwt = Jwt(self)
             self.jwt.audit = JwtAudit(self)
             self.shared_spaces = SharedSpaces(self)
+            self.shares = Shares3(self)

@@ -99,7 +99,6 @@ class Shares2(Shares):
         rbu = ResourceBuilder("shares")
         rbu.add_field('secured', e_type=bool)
         rbu.add_field('enableUSDA', e_type=bool, arg='enable_USDA')
-        rbu.add_field('forceAnonymousSharing', e_type=bool)
         rbu.add_field('creationAcknowledgement', e_type=bool, arg='sharing_acknowledgement')
         rbu.add_field('expirationDate')
         rbu.add_field('subject')
@@ -126,3 +125,12 @@ class Shares2(Shares):
         self.debug(data)
         self._check(data)
         return self.core.create("shares", data)
+
+
+class Shares3(Shares2):
+
+    def get_rbu(self):
+        rbu = super(Shares3, self).get_rbu()
+        # Since LinShare 2.1
+        rbu.add_field('forceAnonymousSharing', e_type=bool)
+        return rbu
