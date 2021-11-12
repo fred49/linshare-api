@@ -45,11 +45,14 @@ from linshareapi.user.rshares import ReceivedShares2
 from linshareapi.user.threads import Threads2
 from linshareapi.user.threads import Workgroup
 from linshareapi.user.shared_spaces import SharedSpaces
+from linshareapi.user.shared_spaces import SharedSpacesV4
 from linshareapi.user.threadmembers import ThreadsMembers2
 from linshareapi.user.threadmembers import WorkgroupMembers
 from linshareapi.user.threadentries import ThreadEntries
 from linshareapi.user.threadentries import WorkgroupContent
+from linshareapi.user.threadentries import WorkgroupContentV4
 from linshareapi.user.threadentries import WorkgroupFolders
+from linshareapi.user.threadentries import WorkgroupFoldersV4
 from linshareapi.user.users import Users2
 from linshareapi.user.guests import Guests
 from linshareapi.user.shares import Shares2
@@ -65,14 +68,14 @@ class UserCli(CoreCli):
     # pylint: disable=too-many-instance-attributes
 
     VERSION = 2.2
-    VERSIONS = [0, 1, 2, 2.2]
+    VERSIONS = [0, 1, 2, 2.2, 4.0, 4.1, 4.2]
 
     def __init__(self, host, user, password, verbose, debug, api_version=None,
                  verify=True, auth_type="plain"):
         # pylint: disable=too-many-arguments
         # pylint: disable=too-many-statements
-        super(UserCli, self).__init__(host, user, password, verbose, debug,
-                                      verify=verify, auth_type=auth_type)
+        super().__init__(host, user, password, verbose, debug,
+                         verify=verify, auth_type=auth_type)
         if api_version is None:
             api_version = self.VERSION
         if api_version not in self.VERSIONS:
@@ -118,7 +121,7 @@ class UserCli(CoreCli):
             self.guests = Guests(self)
             self.contactslists = ContactsList(self)
             self.contactslistscontacts = ContactsListContact(self)
-        elif api_version >= 2:
+        elif 2 <= api_version < 4:
             self.base_url = "linshare/webservice/rest/user/v2"
             self.users = Users2(self)
             self.autocomplete = Autocomplete(self)
@@ -136,8 +139,24 @@ class UserCli(CoreCli):
             self.contactslists = ContactsList2(self)
             self.contactslistscontacts = ContactsListContact2(self)
             self.audit = Audit(self)
-        if api_version >= 2.2:
+            if api_version >= 2.2:
+                self.jwt = Jwt(self)
+                self.jwt.audit = JwtAudit(self)
+                self.shared_spaces = SharedSpaces(self)
+                self.shares = Shares3(self)
+        elif api_version >= 4:
+            self.base_url = "linshare/webservice/rest/user/v4"
+            self.users = Users2(self)
+            self.autocomplete = Autocomplete(self)
+            self.documents = Documents2(self)
+            self.rshares = ReceivedShares2(self)
+            self.workgroup_nodes = WorkgroupContentV4(self)
+            self.workgroup_folders = WorkgroupFoldersV4(self)
+            self.guests = Guests(self)
+            self.contactslists = ContactsList2(self)
+            self.contactslistscontacts = ContactsListContact2(self)
+            self.audit = Audit(self)
             self.jwt = Jwt(self)
             self.jwt.audit = JwtAudit(self)
-            self.shared_spaces = SharedSpaces(self)
+            self.shared_spaces = SharedSpacesV4(self)
             self.shares = Shares3(self)

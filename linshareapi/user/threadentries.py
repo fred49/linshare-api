@@ -317,3 +317,13 @@ class WorkgroupFolders(WorkgroupContent):
             'uuid': uuid
         }
         return self.core.update(url, data)
+
+
+class WorkgroupContentV4(WorkgroupContent):
+
+    local_base_url = "shared_spaces"
+
+
+class WorkgroupFoldersV4(WorkgroupFolders):
+
+    local_base_url = "shared_spaces"

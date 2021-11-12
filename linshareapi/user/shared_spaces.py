@@ -26,7 +26,7 @@
 #
 
 
-
+import urllib
 
 from linshareapi.core import ResourceBuilder
 from linshareapi.cache import Cache as CCache
@@ -76,6 +76,9 @@ class SharedSpaceMembers(GenericClass):
         "CONTRIBUTOR": "b206c2ba-37de-491e-8e9c-88ed3be70682",
         "WRITER": "8839654d-cb33-4633-bf3f-f9e805f97f84",
         "READER": "4ccbed61-71da-42a0-a513-92211953ac95",
+        "DRIVE_ADMIN": "9e73e962-c233-4b4a-be1c-e8d9547acbdf",
+        "DRIVE_WRITER": "963025ca-8220-4915-b4fc-dba7b0b56100",
+        "DRIVE_READER": "556404b5-09b0-413e-a025-79ee40e043e4",
     }
 
 
@@ -178,7 +181,7 @@ class SharedSpaceMembers(GenericClass):
         self._check(data)
         url = "%(base)s/%(ss_uuid)s/%(resource)s" % {
             'base': self.local_base_url,
-            'ss_uuid': data.get('mailingListUuid'),
+            'ss_uuid': data['node']['uuid'],
             'resource': self.local_resource,
         }
         self.core.create(url, data)
@@ -332,3 +335,19 @@ class SharedSpaces(GenericClass):
         rbu.add_field('versioningParameters', extended=True)
         rbu.add_field('quotaUuid', extended=True)
         return rbu
+
+
+class SharedSpacesV4(SharedSpaces):
+    """TODO"""
+
+    @Time('list')
+    @Cache()
+    def list(self, drive=None):
+        param = {}
+        if drive:
+            param['parent'] = drive
+        url = "{base}?{param}".format(
+            base=self.local_base_url,
+            param=urllib.parse.urlencode(param)
+        )
+        return self.core.list(url)
