@@ -36,7 +36,6 @@ from linshareapi.user.core import Time as CTime
 from linshareapi.user.core import CM
 
 
-
 class STime(CTime):
     """TODO"""
     # pylint: disable=too-few-public-methods
@@ -80,7 +79,6 @@ class SharedSpaceMembers(GenericClass):
         "DRIVE_WRITER": "963025ca-8220-4915-b4fc-dba7b0b56100",
         "DRIVE_READER": "556404b5-09b0-413e-a025-79ee40e043e4",
     }
-
 
     @STime('invalid')
     @SInvalid()
@@ -219,13 +217,6 @@ class SharedSpacesAudit(GenericClass):
     local_base_url = "shared_spaces"
     local_resource = "audit"
 
-    # cache = {
-    #     "familly": "shared_space_audit",
-    #     "whole_familly": True,
-    # }
-
-    # @SCache(arguments=True)
-    # @Cache(discriminant="audit-list", arguments=True)
     @Time('audit-list')
     def list(self, ss_uuid):
         # pylint: disable=arguments-differ
@@ -260,7 +251,7 @@ class SharedSpaces(GenericClass):
     }
 
     def __init__(self, corecli):
-        super(SharedSpaces, self).__init__(corecli)
+        super().__init__(corecli)
         self.members = SharedSpaceMembers(corecli)
         self.audit = SharedSpacesAudit(corecli)
 
@@ -337,12 +328,136 @@ class SharedSpaces(GenericClass):
         return rbu
 
 
+class SharedSpaceMembersDrive(SharedSpaceMembers):
+    """TODO"""
+
+    def get_rbu(self):
+        def build_account(value, context):
+            """Transform the input (string) into an account object."""
+            # pylint: disable=unused-argument
+            if not isinstance(value, dict):
+                return {'uuid': value}
+            return value
+
+        def build_role(value, context):
+            """Transform the input (string) into an role object."""
+            # pylint: disable=unused-argument
+            if not isinstance(value, dict):
+                return {
+                    'name': value,
+                    'uuid': self.roles.get(value)
+                }
+            return value
+
+        rbu = ResourceBuilder("shared_space_member")
+        rbu.add_field('uuid')
+        rbu.add_field('account', required=True)
+        rbu.add_field('type', value="DRIVE", required=True)
+        rbu.add_hook('account', build_account)
+        rbu.add_field(
+            'role', required=True,
+            value={
+                'name': "DRIVE_READER",
+                'uuid': "556404b5-09b0-413e-a025-79ee40e043e4",
+            }
+        )
+        rbu.add_hook('role', build_role)
+        rbu.add_field(
+            'nestedRole', required=True,
+            value={
+                'name': "READER",
+                'uuid': "4ccbed61-71da-42a0-a513-92211953ac95",
+            }
+        )
+        rbu.add_hook('nestedRole', build_role)
+        rbu.add_field('nested', extended=True)
+        rbu.add_field('creationDate')
+        rbu.add_field('modificationDate')
+        rbu.add_field('node', required=True, extended=True)
+        return rbu
+
+    @STime('create')
+    @SInvalid()
+    def create(self, data):
+        if 'nested' in data:
+            del data['nested']
+        self.debug(data)
+        self._check(data)
+        url = "%(base)s/%(ss_uuid)s/%(resource)s" % {
+            'base': self.local_base_url,
+            'ss_uuid': data['node']['uuid'],
+            'resource': self.local_resource,
+        }
+        return self.core.create(url, data)
+
+
+class SharedSpaceMembersV4(SharedSpaceMembers):
+    """TODO"""
+
+    def get_rbu(self):
+        def build_account(value, context):
+            """Transform the input (string) into an account object."""
+            # pylint: disable=unused-argument
+            if not isinstance(value, dict):
+                return {'uuid': value}
+            return value
+
+        def build_role(value, context):
+            """Transform the input (string) into an role object."""
+            # pylint: disable=unused-argument
+            if not isinstance(value, dict):
+                return {
+                    'name': value,
+                    'uuid': self.roles.get(value)
+                }
+            return value
+
+        rbu = ResourceBuilder("shared_space_member")
+        rbu.add_field('uuid')
+        rbu.add_field('account', required=True)
+        rbu.add_hook('account', build_account)
+        rbu.add_field(
+            'role', required=True,
+            value={
+                'name': "WRITER",
+                'uuid': "8839654d-cb33-4633-bf3f-f9e805f97f84",
+            }
+        )
+        rbu.add_hook('role', build_role)
+        rbu.add_field('nestedRole')
+        rbu.add_field('creationDate')
+        rbu.add_field('modificationDate')
+        rbu.add_field('node', required=True, extended=True)
+        rbu.add_field('user', arg="extra_user", extended=True)
+        return rbu
+
+    @STime('create')
+    @SInvalid()
+    def create(self, data):
+        if 'nestedRole' in data:
+            del data['nestedRole']
+        self.debug(data)
+        self._check(data)
+        url = "%(base)s/%(ss_uuid)s/%(resource)s" % {
+            'base': self.local_base_url,
+            'ss_uuid': data['node']['uuid'],
+            'resource': self.local_resource,
+        }
+        return self.core.create(url, data)
+
+
 class SharedSpacesV4(SharedSpaces):
     """TODO"""
+
+    def __init__(self, corecli):
+        super().__init__(corecli)
+        self.members = SharedSpaceMembersV4(corecli)
+        self.members.drives = SharedSpaceMembersDrive(corecli)
 
     @Time('list')
     @Cache()
     def list(self, drive=None):
+        # pylint: disable=arguments-differ
         param = {}
         if drive:
             param['parent'] = drive
