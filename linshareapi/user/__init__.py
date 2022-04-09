@@ -68,7 +68,7 @@ class UserCli(CoreCli):
     # pylint: disable=too-many-instance-attributes
 
     VERSION = 2.2
-    VERSIONS = [0, 1, 2, 2.2, 4.0, 4.1, 4.2]
+    VERSIONS = [0, 1, 2, 2.2, 4.0, 4.1, 4.2, 5]
 
     def __init__(self, host, user, password, verbose, debug, api_version=None,
                  verify=True, auth_type="plain"):
@@ -144,8 +144,24 @@ class UserCli(CoreCli):
                 self.jwt.audit = JwtAudit(self)
                 self.shared_spaces = SharedSpaces(self)
                 self.shares = Shares3(self)
-        elif api_version >= 4:
+        elif 4 <= api_version < 5:
             self.base_url = "linshare/webservice/rest/user/v4"
+            self.users = Users2(self)
+            self.autocomplete = Autocomplete(self)
+            self.documents = Documents2(self)
+            self.rshares = ReceivedShares2(self)
+            self.workgroup_nodes = WorkgroupContentV4(self)
+            self.workgroup_folders = WorkgroupFoldersV4(self)
+            self.guests = Guests(self)
+            self.contactslists = ContactsList2(self)
+            self.contactslistscontacts = ContactsListContact2(self)
+            self.audit = Audit(self)
+            self.jwt = Jwt(self)
+            self.jwt.audit = JwtAudit(self)
+            self.shared_spaces = SharedSpacesV4(self)
+            self.shares = Shares3(self)
+        elif api_version >= 5:
+            self.base_url = "linshare/webservice/rest/user/v5"
             self.users = Users2(self)
             self.autocomplete = Autocomplete(self)
             self.documents = Documents2(self)
