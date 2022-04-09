@@ -467,7 +467,8 @@ class ResourceBuilder(object):
             field['hook'] = hook
 
     def add_field(self, field, arg=None, value=None, extended=False,
-                  hidden=False, e_type=str, required=None, not_empty=False):
+                  hidden=False, e_type=str, required=None, not_empty=False,
+                  skip=False):
         """Add a new field to the current ResourceBuilder.
 
            Keyword arguments:
@@ -483,6 +484,7 @@ class ResourceBuilder(object):
                        and update methods
            not_empty -- True if the current field is required and it is not
                        an empty string
+           skip      -- Do not send it to the server
         """
         if required is None:
             required = self._required
@@ -496,7 +498,8 @@ class ResourceBuilder(object):
             'required': required,
             'not_empty': not_empty,
             'e_type': e_type,
-            'hidden': hidden
+            'hidden': hidden,
+            'skip': skip
         }
 
     def get_keys(self, extended=False):
@@ -545,7 +548,8 @@ class ResourceBuilder(object):
     def to_resource(self):
         ret = {}
         for field in list(self._fields.values()):
-            ret[field['field']] = field['value']
+            if not field['skip']:
+                ret[field['field']] = field['value']
         return ret
 
     def load_from_args(self, namespace):

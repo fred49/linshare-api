@@ -424,7 +424,9 @@ class SharedSpaceMembersV4(SharedSpaceMembers):
             }
         )
         rbu.add_hook('role', build_role)
-        rbu.add_field('nestedRole')
+        rbu.add_field('nestedRole', skip=True)
+        rbu.add_field('nested', extended=True, skip=True)
+        rbu.add_field('pristine', extended=True, skip=True)
         rbu.add_field('creationDate')
         rbu.add_field('modificationDate')
         rbu.add_field('node', required=True, extended=True)
@@ -434,8 +436,6 @@ class SharedSpaceMembersV4(SharedSpaceMembers):
     @STime('create')
     @SInvalid()
     def create(self, data):
-        if 'nestedRole' in data:
-            del data['nestedRole']
         self.debug(data)
         self._check(data)
         url = "%(base)s/%(ss_uuid)s/%(resource)s" % {
