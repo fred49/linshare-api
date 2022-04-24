@@ -30,10 +30,11 @@ from linshareapi.core import ApiNotImplementedYet as ANIY
 from linshareapi.core import GenericClass
 from linshareapi.admin.domains import Domains
 from linshareapi.admin.domains import Domains2
+from linshareapi.admin.domains import Domains5
 from linshareapi.admin.domainpatterns import DomainPatterns
 from linshareapi.admin.domainpatterns import DomainPatterns2
 from linshareapi.admin.functionalities import Functionalities
-from linshareapi.admin.threads import  Threads
+from linshareapi.admin.threads import Threads
 from linshareapi.admin.threadmembers import ThreadsMembers
 from linshareapi.admin.threadmembers import ThreadsMembers2
 from linshareapi.admin.shared_spaces import SharedSpaces
@@ -58,14 +59,14 @@ class AdminCli(CoreCli):
 
     VERSION = 2.2
     VERSIONS = [0, 1, 2, 2.2]
-
+    VERSIONS = [0, 1, 2, 2.2, 4.0, 4.1, 4.2, 5]
 
     # pylint: disable=too-many-arguments
     # pylint: disable=too-many-statements
     def __init__(self, host, user, password, verbose, debug, api_version=None,
                  verify=True, auth_type="plain"):
-        super(AdminCli, self).__init__(host, user, password, verbose, debug,
-                                       verify=verify, auth_type=auth_type)
+        super().__init__(host, user, password, verbose, debug,
+                         verify=verify, auth_type=auth_type)
         self.log.debug("api_version : %s", api_version)
         if api_version is None:
             api_version = self.VERSION
@@ -111,7 +112,7 @@ class AdminCli(CoreCli):
             self.funcs = Functionalities(self)
             self.domain_policies = DomainPolicies(self)
             self.mail_activations = MailActivations(self)
-        elif api_version >= 2:
+        elif api_version >= 2 and api_version < 5:
             self.threads = Threads(self)
             self.thread_members = ThreadsMembers2(self)
             self.users = Users(self)
@@ -125,7 +126,12 @@ class AdminCli(CoreCli):
             self.welcome_messages = WelcomeMessages(self)
             self.public_keys = PublicKeys(self)
             self.mail_activations = MailActivations(self)
-        if api_version >= 2.2:
+        if api_version >= 2.2 and api_version < 5:
             self.jwt = Jwt(self)
             self.shared_spaces = SharedSpaces(self)
             self.mail_attachments = MailAttachments(self)
+        if api_version >= 4:
+            self.base_url = "linshare/webservice/rest/admin/v4"
+        if api_version >= 5:
+            self.base_url = "linshare/webservice/rest/admin/v5"
+            self.domains = Domains5(self)

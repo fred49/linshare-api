@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
+"""TODO"""
 
 
 # This file is part of Linshare api.
@@ -25,8 +26,6 @@
 #
 
 
-
-
 from linshareapi.core import ResourceBuilder
 from linshareapi.cache import Cache as CCache
 from linshareapi.cache import Invalid as IInvalid
@@ -44,21 +43,21 @@ from linshareapi.admin.core import CM
 class Time(CTime):
     # pylint: disable=too-few-public-methods
     def __init__(self, suffix, **kwargs):
-        super(Time, self).__init__('domains.' + suffix, **kwargs)
+        super().__init__('domains.' + suffix, **kwargs)
 
 
 # -----------------------------------------------------------------------------
 class Cache(CCache):
     # pylint: disable=too-few-public-methods
     def __init__(self, **kwargs):
-        super(Cache, self).__init__(CM, 'domains', **kwargs)
+        super().__init__(CM, 'domains', **kwargs)
 
 
 # -----------------------------------------------------------------------------
 class Invalid(IInvalid):
     # pylint: disable=too-few-public-methods
     def __init__(self, **kwargs):
-        super(Invalid, self).__init__(CM, 'domains', **kwargs)
+        super().__init__(CM, 'domains', **kwargs)
 
 
 # -----------------------------------------------------------------------------
@@ -66,10 +65,12 @@ class Domains(GenericClass):
 
     @Time('get')
     @Cache(arguments=True)
+    # pylint: disable=arguments-renamed
     def get(self, identifier):
         """ Get one domain."""
         # return self.core.get("domains/" + identifier)
-        domains = (v for v in self.core.list("domains") if v.get('identifier') == identifier)
+        domains = (v for v in self.core.list("domains")
+                   if v.get('identifier') == identifier)
         for i in domains:
             self.log.debug(i)
             return i
@@ -102,6 +103,7 @@ class Domains(GenericClass):
 
     @Time('delete')
     @Invalid()
+    # pylint: disable=arguments-renamed
     def delete(self, identifier):
         if identifier:
             identifier = identifier.strip(" ")
@@ -154,15 +156,7 @@ class Domains(GenericClass):
         return rbu
 
 
-# -----------------------------------------------------------------------------
 class Domains2(Domains):
-
-#    @Time('get')
-#    @Cache()
-#    def get(self, identifier):
-#        """ Get one domain."""
-#        url = "domains/{i}".format({"i": identifier})
-#        return self.core.get(url)
 
     def get_rbu(self):
         rbu = ResourceBuilder("domains")
@@ -185,6 +179,70 @@ class Domains2(Domains):
         rbu.add_field('authShowOrder', value="1", extended=True)
         rbu.add_field('providers', value=[], extended=True)
         rbu.add_field('currentWelcomeMessage',
+                      value={'uuid': "4bc57114-c8c9-11e4-a859-37b5db95d856"},
+                      extended=True)
+        return rbu
+
+
+class Domains5(Domains):
+
+    @Time('get')
+    @Cache()
+    def get(self, identifier):
+        """ Get one domain."""
+        # pylint: disable=consider-using-f-string
+        url = "domains/{uuid}?detail=true".format(
+            uuid=identifier
+        )
+        return self.core.get(url)
+
+    @Time('create')
+    @Invalid()
+    def create(self, data):
+        self.debug(data)
+        self._check(data)
+        if data.get('type') in ["GUESTDOMAIN", "SUBDOMAIN"]:
+            if data.get('parent') is None:
+                raise ValueError(
+                    "parent identifier is required for GuestDomain / SubDomain"
+                )
+        return self.core.create("domains", data)
+
+    @Time('delete')
+    @Invalid()
+    # pylint: disable=arguments-renamed
+    def delete(self, uuid):
+        if not uuid:
+            raise ValueError("uuid is required")
+        obj = self.get(uuid)
+        data = {"uuid":  uuid}
+        self.core.delete("domains", data)
+        return obj
+
+    def get_rbu(self):
+        rbu = ResourceBuilder("domains")
+        rbu.add_field('uuid')
+        rbu.add_field('name', required=True)
+        rbu.add_field('type', "domain_type", value="TOPDOMAIN")
+        rbu.add_field('creationDate')
+        rbu.add_field('modificationDate')
+        rbu.add_field('description', value="", extended=True)
+        rbu.add_field(
+            'parent', "parent_id",
+            hidden=True,
+            value={"uuid": "LinShareRootDomain"})
+        rbu.add_field('defaultEmailLanguage', value="ENGLISH", extended=True)
+        rbu.add_field('defaultUserRole', "role", value="SIMPLE", extended=True)
+        rbu.add_field('domainPolicy',
+                      value={'uuid': "DefaultDomainPolicy"},
+                      extended=True)
+        rbu.add_field('mailConfiguration',
+                      value={'uuid': "946b190d-4c95-485f-bfe6-d288a2de1edd"},
+                      extended=True)
+        rbu.add_field('mimePolicy',
+                      value={'uuid': "3d6d8800-e0f7-11e3-8ec0-080027c0eef0"},
+                      extended=True)
+        rbu.add_field('welcomeMessage',
                       value={'uuid': "4bc57114-c8c9-11e4-a859-37b5db95d856"},
                       extended=True)
         return rbu
