@@ -123,3 +123,83 @@ class Functionalities(GenericClass):
         rbu.add_field('domain', extended=True, required=True)
         rbu.add_field('parentAllowParametersUpdate', extended=True)
         return rbu
+
+
+class Functionalities5(GenericClass):
+    """TODO"""
+
+    local_base_url = "domains"
+    local_resource = "functionalities"
+
+    cache = {
+        "familly": "functionalities-v5",
+        "whole_familly": True,
+    }
+
+    @Time('list')
+    @Cache(arguments=True)
+    def list(self, domain_id=None, only_parents=False):
+        if domain_id is None:
+            domain_id = "LinShareRootDomain"
+        url = "domains/{domain}/functionalities?subs={s!s}"
+        url = url.format(
+                domain=domain_id,
+                s=only_parents)
+        return self.core.list(url)
+
+    @Cache(discriminant="get", arguments=True)
+    def get(self, func_id, domain_id="LinShareRootDomain"):
+        # pylint: disable=arguments-renamed
+        # pylint: disable=consider-using-f-string
+        url = "domains/{domain}/functionalities/{identifier}".format(
+            identifier=func_id,
+            domain=domain_id
+        )
+        return self.core.get(url)
+
+    @Invalid(whole_familly=True)
+    def invalid(self):
+        return "invalid : ok"
+
+    @Time('update')
+    @Invalid()
+    def update(self, data):
+        """ Update a list."""
+        # pylint: disable=arguments-renamed
+        # pylint: disable=consider-using-f-string
+        self.debug(data)
+        url = "%(base)s/%(d_uuid)s/%(resource)s/%(identifier)s" % {
+            'base': self.local_base_url,
+            'd_uuid': data.get('domain').get('uuid'),
+            'resource': self.local_resource,
+            'identifier': data.get('identifier')
+        }
+        return self.core.update(url, data)
+
+    def reset(self, func_id, domain_id="LinShareRootDomain"):
+        """TODO"""
+        return self.delete(func_id, domain_id)
+
+    @Time('reset')
+    @Invalid()
+    def delete(self, func_id, domain_id="LinShareRootDomain"):
+        # pylint: disable=arguments-renamed
+        # pylint: disable=consider-using-f-string
+        url = "domains/{domain}/functionalities/{identifier}".format(
+            identifier=func_id,
+            domain=domain_id
+        )
+        return self.core.delete(url)
+
+    def get_rbu(self):
+        rbu = ResourceBuilder("functionality")
+        rbu.add_field('identifier', required=True)
+        rbu.add_field('type')
+        rbu.add_field('activationPolicy', required=False)
+        rbu.add_field('configurationPolicy', extended=True, required=False)
+        rbu.add_field('delegationPolicy', extended=True, required=False)
+        rbu.add_field('parameter')
+        rbu.add_field('readonly')
+        rbu.add_field('hidden')
+        rbu.add_field('domain', extended=True, required=True)
+        return rbu

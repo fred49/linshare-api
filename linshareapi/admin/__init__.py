@@ -34,6 +34,7 @@ from linshareapi.admin.domains import Domains5
 from linshareapi.admin.domainpatterns import DomainPatterns
 from linshareapi.admin.domainpatterns import DomainPatterns2
 from linshareapi.admin.functionalities import Functionalities
+from linshareapi.admin.functionalities import Functionalities5
 from linshareapi.admin.threads import Threads
 from linshareapi.admin.threadmembers import ThreadsMembers
 from linshareapi.admin.threadmembers import ThreadsMembers2
@@ -135,3 +136,4 @@ class AdminCli(CoreCli):
         if api_version >= 5:
             self.base_url = "linshare/webservice/rest/admin/v5"
             self.domains = Domains5(self)
+            self.funcs = Functionalities5(self)
