@@ -23,8 +23,7 @@
 #
 #  Frédéric MARTIN frederic.martin.fma@gmail.com
 #
-
-
+"""TODO"""
 
 
 from linshareapi.core import ResourceBuilder
@@ -34,30 +33,30 @@ from linshareapi.admin.core import GenericClass
 from linshareapi.admin.core import Time as CTime
 from linshareapi.admin.core import CM
 
-# pylint: disable=C0111
-# Missing docstring
-# pylint: disable=R0903
-# Too few public methods
-# -----------------------------------------------------------------------------
+
 class Time(CTime):
+    """TODO"""
+    # pylint: disable=too-few-public-methods
     def __init__(self, suffix, **kwargs):
-        super(Time, self).__init__('functionalities.' + suffix, **kwargs)
+        super().__init__('functionalities.' + suffix, **kwargs)
 
 
-# -----------------------------------------------------------------------------
 class Cache(CCache):
+    """TODO"""
+    # pylint: disable=too-few-public-methods
     def __init__(self, **kwargs):
-        super(Cache, self).__init__(CM, 'functionalities', **kwargs)
+        super().__init__(CM, 'functionalities', **kwargs)
 
 
-# -----------------------------------------------------------------------------
 class Invalid(IInvalid):
+    """TODO"""
+    # pylint: disable=too-few-public-methods
     def __init__(self, **kwargs):
-        super(Invalid, self).__init__(CM, 'functionalities', **kwargs)
+        super().__init__(CM, 'functionalities', **kwargs)
 
 
-# -----------------------------------------------------------------------------
 class Functionalities(GenericClass):
+    """TODO"""
 
     @Time('list')
     @Cache(arguments=True)
@@ -67,15 +66,19 @@ class Functionalities(GenericClass):
         url = "functionalities?domainId={d}&subs={s!s}"
         url = url.format(d=domain_id, s=only_parents)
         json_obj = self.core.list(url)
-        return [row for row in json_obj if row.get('displayable') == True]
+        return [row for row in json_obj if row.get('displayable') is True]
 
     @Cache(discriminant="get", arguments=True)
     def get(self, func_id, domain_id=None):
+        # pylint: disable=arguments-renamed
         if domain_id is None:
             domain_id = "LinShareRootDomain"
-        json_obj = self.core.get("functionalities/"+ func_id +"?domainId=" +
-                                 domain_id)
-        return json_obj
+        # pylint: disable=consider-using-f-string
+        url = "functionalities/{identifier}?domainId={domain}".format(
+            identifier=func_id,
+            domain=domain_id
+        )
+        return self.core.get(url)
 
     @Invalid(whole_familly=True)
     def invalid(self):
@@ -104,8 +107,8 @@ class Functionalities(GenericClass):
         self.core.delete("functionalities", data)
         return self.get(func_id, domain_id=domain_id)
 
-
     def options_policies(self):
+        """TODO"""
         return self.core.options("enums/policies")
 
     def get_rbu(self):
@@ -117,7 +120,6 @@ class Functionalities(GenericClass):
         rbu.add_field('delegationPolicy', extended=True, required=False)
         rbu.add_field('parameters')
         rbu.add_field('parentIdentifier', extended=True)
-        #rbu.add_field('functionalities', extended=True)
         rbu.add_field('domain', extended=True, required=True)
         rbu.add_field('parentAllowParametersUpdate', extended=True)
         return rbu
