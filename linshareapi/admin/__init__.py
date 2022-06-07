@@ -90,6 +90,7 @@ class AdminCli(CoreCli):
         self.mail_configs = MailConfigs(self)
         self.raw = GenericClass(self)
         self.mail_attachments = ANIY(self, api_version, "mail_attachments")
+        self.shared_spaces = ANIY(self, api_version, "shared_spaces")
         # API declarations
         if api_version == 0:
             self.threads = Threads(self)
@@ -113,7 +114,7 @@ class AdminCli(CoreCli):
             self.funcs = Functionalities(self)
             self.domain_policies = DomainPolicies(self)
             self.mail_activations = MailActivations(self)
-        elif api_version >= 2 and api_version < 5:
+        elif 2 <= api_version < 5:
             self.threads = Threads(self)
             self.thread_members = ThreadsMembers2(self)
             self.users = Users(self)
@@ -127,7 +128,7 @@ class AdminCli(CoreCli):
             self.welcome_messages = WelcomeMessages(self)
             self.public_keys = PublicKeys(self)
             self.mail_activations = MailActivations(self)
-        if api_version >= 2.2 and api_version < 5:
+        if 2.2 <= api_version < 5:
             self.jwt = Jwt(self)
             self.shared_spaces = SharedSpaces(self)
             self.mail_attachments = MailAttachments(self)
@@ -137,3 +138,4 @@ class AdminCli(CoreCli):
             self.base_url = "linshare/webservice/rest/admin/v5"
             self.domains = Domains5(self)
             self.funcs = Functionalities5(self)
+            self.shared_spaces = SharedSpaces(self)
