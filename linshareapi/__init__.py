@@ -24,7 +24,7 @@
 #  Frédéric MARTIN frederic.martin.fma@gmail.com
 #
 
-__version__ = '1.0.10'
+__version__ = '1.0.11'
 from . import core
 from . import admin
 from . import user
