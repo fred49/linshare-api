@@ -46,6 +46,7 @@ from linshareapi.user.threads import Threads2
 from linshareapi.user.threads import Workgroup
 from linshareapi.user.shared_spaces import SharedSpaces
 from linshareapi.user.shared_spaces import SharedSpacesV4
+from linshareapi.user.shared_spaces import SharedSpacesV5
 from linshareapi.user.threadmembers import ThreadsMembers2
 from linshareapi.user.threadmembers import WorkgroupMembers
 from linshareapi.user.threadentries import ThreadEntries
@@ -174,5 +175,5 @@ class UserCli(CoreCli):
             self.audit = Audit(self)
             self.jwt = Jwt(self)
             self.jwt.audit = JwtAudit(self)
-            self.shared_spaces = SharedSpacesV4(self)
+            self.shared_spaces = SharedSpacesV5(self)
             self.shares = Shares3(self)

@@ -466,3 +466,25 @@ class SharedSpacesV4(SharedSpaces):
             param=urllib.parse.urlencode(param)
         )
         return self.core.list(url)
+
+
+class SharedSpacesV5(SharedSpaces):
+    """TODO"""
+
+    def __init__(self, corecli):
+        super().__init__(corecli)
+        self.members = SharedSpaceMembersV4(corecli)
+        self.members.drives = SharedSpaceMembersDrive(corecli)
+
+    @Time('list')
+    @Cache(arguments=True, discriminant="shared_spaces")
+    def list(self, workspace=None):
+        # pylint: disable=arguments-differ
+        param = {}
+        if workspace:
+            param['parent'] = workspace
+        url = "{base}?{param}".format(
+            base=self.local_base_url,
+            param=urllib.parse.urlencode(param)
+        )
+        return self.core.list(url)
