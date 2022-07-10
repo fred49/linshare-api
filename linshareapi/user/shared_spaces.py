@@ -455,7 +455,7 @@ class SharedSpacesV4(SharedSpaces):
         self.members.drives = SharedSpaceMembersDrive(corecli)
 
     @Time('list')
-    @Cache()
+    @Cache(arguments=True, discriminant="shared_spaces")
     def list(self, drive=None):
         # pylint: disable=arguments-differ
         param = {}
