@@ -76,8 +76,15 @@ class Cache(object):
             if self.arguments:
                 if len(args) > 1:
                     func_args = list(args[1:])
+                if len(kwargs) >= 1:
+                    func_args.append(str(kwargs))
             if self.discriminant:
                 func_args.append(self.discriminant)
+            cli.log.debug("args: " + str(args))
+            cli.log.debug("kwargs: " + str(kwargs))
+            cli.log.debug("discriminant: " + self.discriminant)
+            cli.log.debug("arguments: " + str(self.arguments))
+            cli.log.debug("func_args: " + str(func_args))
             nocache = cli.nocache
             if nocache:
                 cli.log.debug("cache disabled.")
