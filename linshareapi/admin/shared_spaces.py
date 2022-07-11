@@ -37,13 +37,12 @@ from linshareapi.admin.core import Time as CTime
 from linshareapi.admin.core import CM
 
 
-
 class STime(CTime):
     """TODO"""
     # pylint: disable=too-few-public-methods
 
     def __init__(self, suffix, **kwargs):
-        super(STime, self).__init__('shared_space_members.' + suffix, **kwargs)
+        super().__init__('shared_space_members.' + suffix, **kwargs)
 
 
 class SCache(CCache):
@@ -51,14 +50,14 @@ class SCache(CCache):
     # pylint: disable=too-few-public-methods
 
     def __init__(self, **kwargs):
-        super(SCache, self).__init__(CM, 'shared_space_members', **kwargs)
+        super().__init__(CM, 'shared_space_members', **kwargs)
 
 
 class SInvalid(IInvalid):
     """TODO"""
 
     def __init__(self, **kwargs):
-        super(SInvalid, self).__init__(CM, 'shared_space_members', **kwargs)
+        super().__init__(CM, 'shared_space_members', **kwargs)
 
 
 class SharedSpaceMembers(GenericClass):
@@ -78,7 +77,6 @@ class SharedSpaceMembers(GenericClass):
         "WRITER": "8839654d-cb33-4633-bf3f-f9e805f97f84",
         "READER": "4ccbed61-71da-42a0-a513-92211953ac95",
     }
-
 
     @STime('invalid')
     @SInvalid()
@@ -192,7 +190,7 @@ class Time(CTime):
     # pylint: disable=too-few-public-methods
 
     def __init__(self, suffix, **kwargs):
-        super(Time, self).__init__('shared_spaces.' + suffix, **kwargs)
+        super().__init__('shared_spaces.' + suffix, **kwargs)
 
 
 class Cache(CCache):
@@ -200,7 +198,7 @@ class Cache(CCache):
     # pylint: disable=too-few-public-methods
 
     def __init__(self, **kwargs):
-        super(Cache, self).__init__(CM, 'shared_spaces', **kwargs)
+        super().__init__(CM, 'shared_spaces', **kwargs)
 
 
 class Invalid(IInvalid):
@@ -208,7 +206,7 @@ class Invalid(IInvalid):
     # pylint: disable=too-few-public-methods
 
     def __init__(self, **kwargs):
-        super(Invalid, self).__init__(CM, 'shared_spaces', **kwargs)
+        super().__init__(CM, 'shared_spaces', **kwargs)
 
 
 class SharedSpaces(GenericClass):
@@ -221,7 +219,7 @@ class SharedSpaces(GenericClass):
     }
 
     def __init__(self, corecli):
-        super(SharedSpaces, self).__init__(corecli)
+        super().__init__(corecli)
         self.members = SharedSpaceMembers(corecli)
 
     @Time('list')
@@ -278,7 +276,6 @@ class SharedSpaces(GenericClass):
 
     def create(self, data):
         raise LinShareException("-1", "Invalid method: create not supported.")
-
 
     def get_rbu(self):
         rbu = ResourceBuilder("shared_space")
