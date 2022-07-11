@@ -26,7 +26,7 @@
 #
 
 
-
+import urllib
 
 from linshareapi.core import ResourceBuilder
 from linshareapi.core import LinShareException
@@ -288,3 +288,27 @@ class SharedSpaces(GenericClass):
         rbu.add_field('versioningParameters', extended=True)
         rbu.add_field('quotaUuid', extended=True)
         return rbu
+
+
+class SharedSpacesV5(SharedSpaces):
+    """TODO"""
+
+    def __init__(self, corecli):
+        super().__init__(corecli)
+        self.members = SharedSpaceMembers(corecli)
+
+    @Time('list')
+    @Cache(arguments=True, discriminant="shared_spaces")
+    def list(self, name=None, node_type=None):
+        # pylint: disable=arguments-differ
+        param = {}
+        if name:
+            param['name'] = name
+        if node_type:
+            param['nodeType'] = node_type
+        # pylint: disable=consider-using-f-string
+        url = "{base}?{param}".format(
+            base=self.local_base_url,
+            param=urllib.parse.urlencode(param)
+        )
+        return self.core.list_browse_all_pages(url)
