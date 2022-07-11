@@ -284,7 +284,7 @@ class SharedSpaces(GenericClass):
         rbu.add_field('nodeType')
         rbu.add_field('creationDate')
         rbu.add_field('modificationDate')
-        rbu.add_field('parentUuid', extended=True)
+        rbu.add_field('parentUuid')
         rbu.add_field('versioningParameters', extended=True)
         rbu.add_field('quotaUuid', extended=True)
         return rbu
