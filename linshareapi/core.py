@@ -256,6 +256,31 @@ class CoreCli(object):
         self.last_req_time = str(endtime - starttime)
         return self.process_request(request, url)
 
+    def list_browse_all_pages(self, url):
+        """ List ressources store into LinShare."""
+        url = self.get_full_url(url)
+        starttime = datetime.datetime.now()
+        request = self.session.get(url)
+        res = self.process_request(request, url)
+        if 'Current-Page-Size' in request.headers:
+            last = request.headers.get('Last') == 'true'
+            self.log.error("Last: %s", last)
+            cpt = 0
+            while not last:
+                current_page = request.headers.get('Current-Page')
+                self.log.error("Current-Page: %s", current_page)
+                next_page = url + "&page=" + str(cpt)
+                if '?' not in url:
+                    next_page = url + "?page=" + str(cpt)
+                request = self.session.get(next_page)
+                last = request.headers.get('Last') == 'true'
+                cpt += 1
+                res += self.process_request(request, url)
+        endtime = datetime.datetime.now()
+        self.last_req_time = str(endtime - starttime)
+        return res
+
+
     def get(self, url):
         """Get a ressource store into LinShare."""
         return self.list(url)

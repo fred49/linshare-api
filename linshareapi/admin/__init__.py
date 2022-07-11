@@ -39,6 +39,7 @@ from linshareapi.admin.threads import Threads
 from linshareapi.admin.threadmembers import ThreadsMembers
 from linshareapi.admin.threadmembers import ThreadsMembers2
 from linshareapi.admin.shared_spaces import SharedSpaces
+from linshareapi.admin.shared_spaces import SharedSpacesV5
 from linshareapi.admin.users import Users
 from linshareapi.admin.iusers import InconsistentUsers
 from linshareapi.admin.ldapconnections import LdapConnections
@@ -138,4 +139,4 @@ class AdminCli(CoreCli):
             self.base_url = "linshare/webservice/rest/admin/v5"
             self.domains = Domains5(self)
             self.funcs = Functionalities5(self)
-            self.shared_spaces = SharedSpaces(self)
+            self.shared_spaces = SharedSpacesV5(self)
