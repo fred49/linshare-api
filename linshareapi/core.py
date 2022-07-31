@@ -264,11 +264,30 @@ class CoreCli(object):
         res = self.process_request(request, url)
         if 'Current-Page-Size' in request.headers:
             last = request.headers.get('Last') == 'true'
-            self.log.error("Last: %s", last)
+            if self.verbose:
+                self.log.info("Last: %s", last)
+                self.log.info(
+                    "Current-Page-Size: %s",
+                    request.headers.get('Current-Page-Size')
+                )
+                self.log.info(
+                    "Total-Elements: %s",
+                    request.headers.get('Total-Elements')
+                )
+            else:
+                self.log.debug("Last: %s", last)
+                self.log.debug(
+                    "Current-Page-Size: %s",
+                    request.headers.get('Current-Page-Size')
+                )
+                self.log.debug(
+                    "Total-Elements: %s",
+                    request.headers.get('Total-Elements')
+                )
             cpt = 0
             while not last:
                 current_page = request.headers.get('Current-Page')
-                self.log.error("Current-Page: %s", current_page)
+                self.log.debug("Current-Page: %s", current_page)
                 next_page = url + "&page=" + str(cpt)
                 if '?' not in url:
                     next_page = url + "?page=" + str(cpt)
