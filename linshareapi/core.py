@@ -284,10 +284,13 @@ class CoreCli(object):
                     "Total-Elements: %s",
                     request.headers.get('Total-Elements')
                 )
-            cpt = 0
+            cpt = 1
             while not last:
                 current_page = request.headers.get('Current-Page')
-                self.log.debug("Current-Page: %s", current_page)
+                if self.verbose:
+                    self.log.info("Current-Page: %s", current_page)
+                else:
+                    self.log.debug("Current-Page: %s", current_page)
                 next_page = url + "&page=" + str(cpt)
                 if '?' not in url:
                     next_page = url + "?page=" + str(cpt)
